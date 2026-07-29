@@ -35,7 +35,7 @@ export async function GET({ site }) {
     '<rss version="2.0">',
     "  <channel>",
     "    <title>Tameru Write-ups</title>",
-    "    <description>Ghi chép CTF, phân tích lỗ hổng và bài học sau mỗi challenge.</description>",
+    "    <description>Write-up CTF của Tameru.</description>",
     `    <link>${escapeXml(base.href)}</link>`,
     "    <language>vi</language>",
     items,

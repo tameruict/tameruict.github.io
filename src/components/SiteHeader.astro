@@ -8,7 +8,6 @@ const isWriteups = pathname.startsWith("/writeups");
   <div class="header-shell">
     <a class="wordmark" href="/" aria-label="Tameru Write-ups, trang chủ">
       <strong>Tameru</strong>
-      <span>field notes</span>
     </a>
 
     <nav aria-label="Điều hướng chính">
@@ -42,7 +41,6 @@ const isWriteups = pathname.startsWith("/writeups");
     display: inline-flex;
     min-height: 2.75rem;
     align-items: center;
-    gap: 0.55rem;
     color: var(--ink);
     text-decoration: none;
   }
@@ -52,15 +50,6 @@ const isWriteups = pathname.startsWith("/writeups");
     font-size: 1.15rem;
     font-weight: 650;
     letter-spacing: -0.02em;
-  }
-
-  .wordmark span {
-    padding-left: 0.55rem;
-    border-left: 1px solid var(--line-strong);
-    color: var(--accent-strong);
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.04em;
   }
 
   nav {
@@ -96,10 +85,6 @@ const isWriteups = pathname.startsWith("/writeups");
       width: min(calc(100% - 1.25rem), var(--page-width));
       min-height: 4rem;
       gap: 0.4rem;
-    }
-
-    .wordmark span {
-      display: none;
     }
 
     nav {

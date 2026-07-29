@@ -16,13 +16,12 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
 
 <BaseLayout
   title="Write-ups"
-  description="Kho write-up CTF có thể tìm kiếm theo nền tảng, chủ đề và độ khó."
+  description="Write-up CTF của Tameru."
 >
   <header class="archive-header shell">
-    <p class="section-label">Archive</p>
     <div>
       <h1>Write-ups</h1>
-      <p>Tìm theo challenge, kỹ thuật hoặc nền tảng.</p>
+      <p>{posts.length} bài viết</p>
     </div>
   </header>
 
@@ -83,8 +82,7 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
         </div>
       ) : (
         <div class="empty-state static-empty">
-          <h3>Chưa có bài viết</h3>
-          <p>Đổi một bài từ draft sang public để hiển thị tại đây.</p>
+          <h3>Chưa có write-up</h3>
         </div>
       )
     }

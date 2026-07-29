@@ -6,300 +6,82 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 const posts = (await getCollection("writeups", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
-const featuredPost = posts.find(({ data }) => data.featured) ?? posts[0];
-const recentPosts = posts.filter(({ id }) => id !== featuredPost?.id).slice(0, 4);
-const platformCounts = [...new Set(posts.map(({ data }) => data.platform))]
-  .map((platform) => ({
-    platform,
-    count: posts.filter(({ data }) => data.platform === platform).length,
-  }))
-  .sort((a, b) => a.platform.localeCompare(b.platform));
 ---
 
-<BaseLayout description="Ghi chép kỹ thuật về CTF, phân tích lỗ hổng và quy trình kiểm chứng trong security labs.">
-  <section class="intro shell" aria-labelledby="intro-title">
-    <div class="intro-copy">
-      <p class="section-label">Technical field notes</p>
-      <h1 id="intro-title">Ghi lại quá trình.<br />Giữ lại bằng chứng.</h1>
-      <p>
-        Write-up CTF tập trung vào cách quan sát, kiểm chứng và rút kinh nghiệm từ mỗi challenge.
-      </p>
-      <div class="intro-actions">
-        <a class="primary-link" href="/writeups/">Xem write-up</a>
-      </div>
+<BaseLayout description="Write-up CTF của Tameru.">
+  <header class="page-header shell">
+    <div>
+      <h1>Write-ups</h1>
+      <p>{posts.length} bài viết</p>
     </div>
+    <a href="/writeups/">Tìm kiếm và lọc</a>
+  </header>
 
-    <dl class="site-summary" aria-label="Tổng quan nội dung">
-      <div>
-        <dt>Bài viết</dt>
-        <dd>{posts.length}</dd>
-      </div>
-      <div>
-        <dt>Nền tảng</dt>
-        <dd>{platformCounts.length}</dd>
-      </div>
-      <div>
-        <dt>Định dạng</dt>
-        <dd>Markdown</dd>
-      </div>
-    </dl>
-  </section>
-
-  {
-    featuredPost && (
-      <section class="featured-section shell" aria-labelledby="featured-title">
-        <header class="section-heading">
-          <p class="section-label">Bài nổi bật</p>
-          <h2 id="featured-title">Đọc từ một case hoàn chỉnh</h2>
-        </header>
-        <WriteupCard post={featuredPost} featured titleAs="h3" />
-      </section>
-    )
-  }
-
-  <section class="recent-section shell" aria-labelledby="recent-title">
-    <header class="section-heading heading-with-link">
-      <div>
-        <h2 id="recent-title">Mới cập nhật</h2>
-        <p>Các ghi chú mới nhất, sắp xếp theo ngày công bố.</p>
-      </div>
-      <a href="/writeups/">Xem toàn bộ</a>
-    </header>
-
+  <section class="writeup-index shell" aria-labelledby="writeup-list-title">
+    <h2 class="visually-hidden" id="writeup-list-title">Danh sách write-up</h2>
     {
-      recentPosts.length > 0 ? (
-        <div class="recent-list">
-          {recentPosts.map((post) => <WriteupCard post={post} titleAs="h3" />)}
+      posts.length > 0 ? (
+        <div class="writeup-list">
+          {posts.map((post) => <WriteupCard post={post} />)}
         </div>
       ) : (
-        <p class="empty-copy">Chưa có thêm bài viết.</p>
+        <p class="empty-state">Chưa có write-up.</p>
       )
     }
-  </section>
-
-  <section class="platform-section shell" aria-labelledby="platform-title">
-    <header class="section-heading">
-      <h2 id="platform-title">Duyệt theo nền tảng</h2>
-    </header>
-    <div class="platform-links">
-      {
-        platformCounts.map(({ platform, count }) => (
-          <a href={`/writeups/?platform=${encodeURIComponent(platform)}`}>
-            <span>{platform}</span>
-            <strong>{count}</strong>
-          </a>
-        ))
-      }
-    </div>
   </section>
 </BaseLayout>
 
 <style>
-  .intro {
-    display: grid;
-    min-height: min(42rem, calc(100dvh - 4.25rem));
-    padding-block: clamp(4rem, 10vw, 8rem);
-    align-items: end;
-    grid-template-columns: minmax(0, 1.5fr) minmax(15rem, 0.5fr);
-    gap: clamp(3rem, 9vw, 8rem);
-  }
-
-  .intro h1 {
-    max-width: 13ch;
-    margin: 1rem 0 0;
-    font-family: var(--font-display);
-    font-size: clamp(3rem, 7vw, 6.2rem);
-    font-weight: 600;
-    letter-spacing: -0.055em;
-    line-height: 0.98;
-    text-wrap: balance;
-  }
-
-  .intro-copy > p:not(.section-label) {
-    max-width: 48ch;
-    margin: 1.5rem 0 0;
-    color: var(--ink-soft);
-    font-size: clamp(1rem, 0.94rem + 0.35vw, 1.18rem);
-  }
-
-  .intro-actions {
+  .page-header {
     display: flex;
-    margin-top: 2rem;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.8rem 1.25rem;
-  }
-
-  .primary-link {
-    display: inline-flex;
-    min-height: 2.75rem;
-    align-items: center;
-    font-size: 0.86rem;
-    font-weight: 700;
-  }
-
-  .primary-link {
-    padding-inline: 1rem;
-    border: 1px solid var(--accent);
-    border-radius: var(--radius-sm);
-    background: var(--accent);
-    color: #ffffff;
-    text-decoration: none;
-  }
-
-  .primary-link:hover {
-    background: var(--accent-strong);
-  }
-
-  .site-summary {
-    margin: 0;
-    padding: 0;
-    border-top: 1px solid var(--line-strong);
-  }
-
-  .site-summary div {
-    display: flex;
-    min-height: 3.7rem;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .site-summary dt {
-    color: var(--ink-soft);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-  }
-
-  .site-summary dd {
-    margin: 0;
-    color: var(--ink);
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 700;
-  }
-
-  .featured-section,
-  .recent-section,
-  .platform-section {
-    padding-block: clamp(3.5rem, 8vw, 6.5rem);
-    border-top: 1px solid var(--line-strong);
-  }
-
-  .section-heading {
-    max-width: 48rem;
-    margin-bottom: 1.75rem;
-  }
-
-  .section-heading h2 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(1.8rem, 1.4rem + 1.2vw, 2.75rem);
-    font-weight: 650;
-    letter-spacing: -0.035em;
-    line-height: 1.1;
-  }
-
-  .section-heading .section-label + h2 {
-    margin-top: 0.65rem;
-  }
-
-  .section-heading p:not(.section-label) {
-    margin: 0.55rem 0 0;
-    color: var(--ink-soft);
-    font-size: 0.9rem;
-  }
-
-  .heading-with-link {
-    display: flex;
-    max-width: none;
+    padding-block: clamp(4rem, 9vw, 7rem) clamp(2rem, 5vw, 3.5rem);
     align-items: end;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: 2rem;
+    border-bottom: 1px solid var(--line-strong);
   }
 
-  .heading-with-link > a {
-    display: inline-flex;
-    min-height: 2.75rem;
-    align-items: center;
-    color: var(--accent-strong);
-    font-size: 0.82rem;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-
-  .platform-links {
-    display: grid;
-    border-top: 1px solid var(--line);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: clamp(2rem, 8vw, 7rem);
-  }
-
-  .platform-links a {
-    display: flex;
-    min-height: 4.25rem;
-    padding-block: 0.65rem;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    border-bottom: 1px solid var(--line);
-    text-decoration: none;
-  }
-
-  .platform-links a:hover span {
-    color: var(--accent-strong);
-  }
-
-  .platform-links span {
+  .page-header h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 6vw, 5rem);
     font-weight: 650;
+    letter-spacing: -0.045em;
+    line-height: 1;
   }
 
-  .platform-links strong {
+  .page-header p {
+    margin: 0.85rem 0 0;
     color: var(--ink-soft);
     font-family: var(--font-mono);
     font-size: 0.72rem;
   }
 
-  .empty-copy {
+  .page-header a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    color: var(--accent-strong);
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .writeup-index {
+    min-height: 48dvh;
+    padding-block: 1.5rem clamp(5rem, 10vw, 8rem);
+  }
+
+  .empty-state {
+    margin: 3rem 0;
     color: var(--ink-soft);
   }
 
-  @media (prefers-color-scheme: dark) {
-    .primary-link {
-      color: #0c1211;
-    }
-  }
-
-  @media (max-width: 48rem) {
-    .intro {
-      min-height: auto;
-      grid-template-columns: 1fr;
-      gap: 3.5rem;
-    }
-
-    .site-summary {
-      max-width: 28rem;
-    }
-  }
-
   @media (max-width: 42rem) {
-    .intro {
-      padding-block: 3.75rem 4.5rem;
-    }
-
-    .intro h1 {
-      font-size: clamp(2.8rem, 13vw, 4.5rem);
-    }
-
-    .heading-with-link {
+    .page-header {
+      padding-top: 3.5rem;
       align-items: flex-start;
       flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .platform-links {
-      grid-template-columns: 1fr;
+      gap: 1rem;
     }
   }
 </style>
