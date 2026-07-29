@@ -4,7 +4,7 @@ const year = new Date().getFullYear();
 
 <footer class="site-footer">
   <div class="footer-shell">
-    <p>Tameru Write-ups</p>
+    <p>Ghi chép kỹ thuật về CTF và security labs.</p>
     <div class="footer-links">
       <a href="https://github.com/tameruict" rel="me">GitHub</a>
       <a href="/rss.xml">RSS</a>
@@ -15,14 +15,14 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer {
-    margin-top: 3rem;
     border-top: 1px solid var(--line);
+    background: var(--surface);
   }
 
   .footer-shell {
     display: flex;
-    width: min(calc(100% - 2rem), var(--page-width));
-    min-height: 6.5rem;
+    width: min(calc(100% - 2.5rem), var(--page-width));
+    min-height: 6rem;
     margin-inline: auto;
     align-items: center;
     justify-content: space-between;
@@ -31,18 +31,23 @@ const year = new Date().getFullYear();
 
   .footer-shell > p {
     margin: 0;
-    color: var(--ink);
-    font-size: 0.88rem;
-    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 0.82rem;
   }
 
   .footer-links {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
+    gap: 1rem;
     color: var(--ink-soft);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
+  }
+
+  .footer-links a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
   }
 
   .footer-links a:hover {
@@ -52,7 +57,12 @@ const year = new Date().getFullYear();
   @media (max-width: 37rem) {
     .footer-shell {
       width: min(calc(100% - 1.25rem), var(--page-width));
-      min-height: 7.5rem;
+      min-height: 8rem;
+      padding-block: 1.25rem;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0.4rem;
     }
   }
 </style>

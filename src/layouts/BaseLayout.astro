@@ -20,23 +20,32 @@ const {
 const pageTitle = title === "Tameru Write-ups" ? title : `${title} | Tameru Write-ups`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
 const imageURL = image ? new URL(image, Astro.site ?? Astro.url) : undefined;
+const rssURL = new URL("/rss.xml", Astro.site ?? Astro.url);
 ---
 
 <!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="theme-color" content="#fff7f7" />
+    <meta name="theme-color" content="#f4f6f5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c1211" media="(prefers-color-scheme: dark)" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title="Tameru Write-ups" href={rssURL} />
     <meta property="og:type" content={article ? "article" : "website"} />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:site_name" content="Tameru Write-ups" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     {imageURL && <meta property="og:image" content={imageURL} />}
     <meta name="twitter:card" content={imageURL ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    {imageURL && <meta name="twitter:image" content={imageURL} />}
     <title>{pageTitle}</title>
   </head>
   <body>

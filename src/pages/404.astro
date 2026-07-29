@@ -4,47 +4,84 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout title="Không tìm thấy trang" description="Trang được yêu cầu không tồn tại.">
   <section class="not-found shell">
-    <p class="code">404</p>
-    <h1>Không tìm thấy trang</h1>
-    <p>Đường dẫn có thể đã thay đổi hoặc bài viết chưa được công bố.</p>
-    <a href="/">Về trang chủ</a>
+    <div class="error-code" aria-hidden="true">404</div>
+    <div>
+      <p class="section-label">Không tìm thấy</p>
+      <h1>Đường dẫn này không còn ở đây.</h1>
+      <p>Bài viết có thể chưa được công bố hoặc URL đã thay đổi.</p>
+      <div class="actions">
+        <a href="/">Về trang chủ</a>
+        <a href="/writeups/">Tìm trong write-up</a>
+      </div>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
   .not-found {
-    display: flex;
-    min-height: 65dvh;
+    display: grid;
+    min-height: 68dvh;
     padding-block: 4rem;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
+    align-items: center;
+    grid-template-columns: minmax(10rem, 0.45fr) minmax(0, 1fr);
+    gap: clamp(2rem, 8vw, 7rem);
   }
 
-  .code {
-    margin: 0 0 0.75rem;
-    color: var(--accent);
+  .error-code {
+    color: var(--line-strong);
     font-family: var(--font-mono);
+    font-size: clamp(5rem, 16vw, 11rem);
     font-weight: 700;
+    letter-spacing: -0.08em;
+    line-height: 0.8;
   }
 
   h1 {
-    margin: 0;
+    max-width: 13ch;
+    margin: 0.8rem 0 0;
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
-    line-height: 1;
-    letter-spacing: -0.04em;
+    font-size: clamp(2.5rem, 6vw, 4.6rem);
+    font-weight: 600;
+    letter-spacing: -0.045em;
+    line-height: 1.05;
+    text-wrap: balance;
   }
 
-  .not-found > p:not(.code) {
+  .not-found div > p:not(.section-label) {
     max-width: 36rem;
     margin: 1rem 0 0;
     color: var(--ink-soft);
   }
 
-  a {
+  .actions {
+    display: flex;
     margin-top: 1.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+  }
+
+  .actions a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
     color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  .actions a:last-child {
+    color: var(--ink-soft);
     font-weight: 600;
+  }
+
+  @media (max-width: 42rem) {
+    .not-found {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .error-code {
+      font-size: 5rem;
+    }
   }
 </style>

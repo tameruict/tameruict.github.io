@@ -1,156 +1,364 @@
 ---
 import { getCollection } from "astro:content";
-import BaseLayout from "../../layouts/BaseLayout.astro";
 import WriteupCard from "../../components/WriteupCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
 
 const posts = (await getCollection("writeups", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
-const platformGroups = [...new Set(posts.map(({ data }) => data.platform))]
-  .sort((a, b) => a.localeCompare(b))
-  .map((platform) => ({
-    platform,
-    posts: posts.filter(({ data }) => data.platform === platform),
-  }));
+const platforms = [...new Set(posts.map(({ data }) => data.platform))].sort((a, b) =>
+  a.localeCompare(b),
+);
+const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a, b) =>
+  a.localeCompare(b),
+);
 ---
 
 <BaseLayout
-  title="Tất cả write-up"
-  description="Write-up CTF được nhóm theo nền tảng và mức độ khó."
+  title="Write-ups"
+  description="Kho write-up CTF có thể tìm kiếm theo nền tảng, chủ đề và độ khó."
 >
   <header class="archive-header shell">
-    <h1>Tất cả write-up</h1>
-    <p>{posts.length} bài viết</p>
+    <p class="section-label">Archive</p>
+    <div>
+      <h1>Write-ups</h1>
+      <p>Tìm theo challenge, kỹ thuật hoặc nền tảng.</p>
+    </div>
   </header>
 
-  <nav class="platform-nav shell" aria-label="Chọn nền tảng">
-    {
-      platformGroups.map(({ platform, posts: platformPosts }) => {
-        const anchor = platform.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-        return (
-          <a href={`#${anchor}`}>
-            {platform}
-            <span>{platformPosts.length}</span>
-          </a>
-        );
-      })
-    }
-  </nav>
+  <section class="archive shell" aria-labelledby="archive-results-title">
+    <h2 class="visually-hidden" id="archive-results-title">Danh sách write-up</h2>
 
-  <div class="platform-groups shell">
+    <form class="filters" data-filter-form role="search">
+      <div class="field search-field">
+        <label for="writeup-search">Tìm kiếm</label>
+        <input
+          id="writeup-search"
+          name="query"
+          type="search"
+          autocomplete="off"
+          placeholder="Challenge, tag hoặc kỹ thuật"
+        />
+      </div>
+
+      <div class="field">
+        <label for="platform-filter">Nền tảng</label>
+        <select id="platform-filter" name="platform">
+          <option value="">Tất cả nền tảng</option>
+          {platforms.map((platform) => <option value={platform}>{platform}</option>)}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="category-filter">Chủ đề</label>
+        <select id="category-filter" name="category">
+          <option value="">Tất cả chủ đề</option>
+          {categories.map((category) => <option value={category}>{category}</option>)}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="difficulty-filter">Độ khó</label>
+        <select id="difficulty-filter" name="difficulty">
+          <option value="">Tất cả độ khó</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+          <option value="Insane">Insane</option>
+        </select>
+      </div>
+
+      <button class="clear-button" type="reset">Đặt lại</button>
+    </form>
+
+    <div class="result-summary" aria-live="polite">
+      <span>Kết quả</span>
+      <strong><span data-visible-count>{posts.length}</span> / {posts.length}</strong>
+    </div>
+
     {
-      platformGroups.map(({ platform, posts: platformPosts }) => {
-        const anchor = platform.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-        return (
-          <section class="platform-group" id={anchor} aria-labelledby={`${anchor}-title`}>
-            <header>
-              <h2 id={`${anchor}-title`}>{platform}</h2>
-              <p>{platformPosts.length} bài</p>
-            </header>
-            <div class="writeup-grid">
-              {platformPosts.map((post) => <WriteupCard post={post} />)}
-            </div>
-          </section>
-        );
-      })
+      posts.length > 0 ? (
+        <div class="writeup-list" data-writeup-list>
+          {posts.map((post) => <WriteupCard post={post} />)}
+        </div>
+      ) : (
+        <div class="empty-state static-empty">
+          <h3>Chưa có bài viết</h3>
+          <p>Đổi một bài từ draft sang public để hiển thị tại đây.</p>
+        </div>
+      )
     }
-  </div>
+
+    <div class="empty-state" data-filter-empty hidden aria-live="polite">
+      <h3>Không có kết quả</h3>
+      <p>Thử một từ khóa khác hoặc bỏ bớt bộ lọc.</p>
+      <button type="button" data-empty-reset>Hiện tất cả</button>
+    </div>
+  </section>
+
+  <script>
+    const form = document.querySelector<HTMLFormElement>("[data-filter-form]");
+    const cards = [...document.querySelectorAll<HTMLElement>("[data-writeup-card]")];
+    const visibleCount = document.querySelector<HTMLElement>("[data-visible-count]");
+    const emptyState = document.querySelector<HTMLElement>("[data-filter-empty]");
+    const searchInput = document.querySelector<HTMLInputElement>("#writeup-search");
+    const platformSelect = document.querySelector<HTMLSelectElement>("#platform-filter");
+    const categorySelect = document.querySelector<HTMLSelectElement>("#category-filter");
+    const difficultySelect = document.querySelector<HTMLSelectElement>("#difficulty-filter");
+
+    const normalize = (value: string) =>
+      value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLocaleLowerCase("vi")
+        .trim();
+
+    const setInitialFilters = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (searchInput) searchInput.value = params.get("query") ?? "";
+      if (platformSelect) platformSelect.value = params.get("platform") ?? "";
+      if (categorySelect) categorySelect.value = params.get("category") ?? "";
+      if (difficultySelect) difficultySelect.value = params.get("difficulty") ?? "";
+    };
+
+    const updateURL = () => {
+      if (!searchInput || !platformSelect || !categorySelect || !difficultySelect) return;
+      const params = new URLSearchParams();
+      if (searchInput.value.trim()) params.set("query", searchInput.value.trim());
+      if (platformSelect.value) params.set("platform", platformSelect.value);
+      if (categorySelect.value) params.set("category", categorySelect.value);
+      if (difficultySelect.value) params.set("difficulty", difficultySelect.value);
+      const query = params.toString();
+      window.history.replaceState(null, "", query ? `${window.location.pathname}?${query}` : window.location.pathname);
+    };
+
+    const applyFilters = ({ updateHistory = true } = {}) => {
+      if (!searchInput || !platformSelect || !categorySelect || !difficultySelect) return;
+
+      const query = normalize(searchInput.value);
+      const platform = platformSelect.value;
+      const category = categorySelect.value;
+      const difficulty = difficultySelect.value;
+      let count = 0;
+
+      cards.forEach((card) => {
+        const searchText = normalize(card.dataset.search ?? "");
+        const matches =
+          (!query || searchText.includes(query)) &&
+          (!platform || card.dataset.platform === platform) &&
+          (!category || card.dataset.category === category) &&
+          (!difficulty || card.dataset.difficulty === difficulty);
+
+        card.hidden = !matches;
+        if (matches) count += 1;
+      });
+
+      if (visibleCount) visibleCount.textContent = String(count);
+      if (emptyState) emptyState.hidden = count !== 0 || cards.length === 0;
+      if (updateHistory) updateURL();
+    };
+
+    setInitialFilters();
+    applyFilters({ updateHistory: false });
+
+    form?.addEventListener("submit", (event) => event.preventDefault());
+    form?.addEventListener("input", () => applyFilters());
+    form?.addEventListener("reset", () => window.setTimeout(() => applyFilters(), 0));
+
+    document.querySelector<HTMLButtonElement>("[data-empty-reset]")?.addEventListener("click", () => {
+      form?.reset();
+      window.setTimeout(() => {
+        applyFilters();
+        searchInput?.focus();
+      }, 0);
+    });
+  </script>
 </BaseLayout>
 
 <style>
   .archive-header {
+    padding-block: clamp(3.5rem, 8vw, 6rem) clamp(2rem, 4vw, 3rem);
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .archive-header > div {
     display: flex;
-    padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(2rem, 4vw, 3rem);
+    margin-top: 0.75rem;
     align-items: end;
     justify-content: space-between;
     gap: 2rem;
-    border-bottom: 1px solid var(--line-strong);
   }
 
   .archive-header h1 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(2.6rem, 6vw, 4.5rem);
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
     line-height: 1;
-    letter-spacing: -0.04em;
   }
 
-  .archive-header p {
+  .archive-header div > p {
+    max-width: 28rem;
     margin: 0 0 0.35rem;
     color: var(--ink-soft);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
   }
 
-  .platform-nav {
-    display: flex;
-    padding-block: 1.25rem;
-    border-bottom: 1px solid var(--line);
-    flex-wrap: wrap;
-    gap: 0.75rem 1.5rem;
+  .archive {
+    padding-block: 2rem clamp(4rem, 8vw, 7rem);
   }
 
-  .platform-nav a {
-    display: inline-flex;
-    gap: 0.45rem;
+  .filters {
+    display: grid;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    grid-template-columns: minmax(15rem, 1.6fr) repeat(3, minmax(9rem, 0.75fr)) auto;
+    gap: 0.85rem;
+  }
+
+  .field {
+    min-width: 0;
+  }
+
+  .field label {
+    display: block;
+    margin-bottom: 0.35rem;
     color: var(--ink-soft);
-    font-size: 0.85rem;
-    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
   }
 
-  .platform-nav a:hover {
+  .field input,
+  .field select {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    font-size: 0.84rem;
+  }
+
+  .field input:focus,
+  .field select:focus {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-focus);
+    outline: none;
+  }
+
+  .field input::placeholder {
+    color: var(--ink-soft);
+    opacity: 0.9;
+  }
+
+  .clear-button {
+    min-height: 2.75rem;
+    margin-top: 1.35rem;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--ink);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .clear-button:hover {
+    border-color: var(--accent);
     color: var(--accent-strong);
   }
 
-  .platform-nav span {
-    color: var(--accent);
+  .result-summary {
+    display: flex;
+    min-height: 4rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--ink-soft);
     font-family: var(--font-mono);
     font-size: 0.7rem;
   }
 
-  .platform-groups {
-    padding-bottom: clamp(4rem, 8vw, 7rem);
+  .result-summary strong {
+    color: var(--ink);
   }
 
-  .platform-group {
-    padding-block: clamp(2.5rem, 5vw, 4rem);
-    scroll-margin-top: 2rem;
+  .writeup-list {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
-  .platform-group + .platform-group {
-    border-top: 1px solid var(--line-strong);
+  .empty-state {
+    max-width: 32rem;
+    margin: 4rem auto;
+    padding: 2.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    text-align: center;
   }
 
-  .platform-group > header {
-    display: flex;
-    margin-bottom: 0.75rem;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
+  .empty-state[hidden] {
+    display: none;
   }
 
-  .platform-group h2 {
+  .empty-state h3 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(1.7rem, 3vw, 2.5rem);
-    letter-spacing: -0.03em;
+    font-size: 1.45rem;
   }
 
-  .platform-group header p {
+  .empty-state p {
+    margin: 0.5rem 0 0;
     color: var(--ink-soft);
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
   }
 
-  .writeup-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: clamp(2rem, 5vw, 5rem);
+  .empty-state button {
+    min-height: 2.75rem;
+    margin-top: 1.25rem;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  @media (max-width: 64rem) {
+    .filters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .search-field {
+      grid-column: 1 / -1;
+    }
+
+    .clear-button {
+      margin-top: 0;
+    }
   }
 
   @media (max-width: 42rem) {
-    .writeup-grid {
+    .archive-header > div {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .filters {
+      padding: 1rem;
       grid-template-columns: 1fr;
+    }
+
+    .search-field {
+      grid-column: auto;
+    }
+
+    .clear-button {
+      width: 100%;
     }
   }
 </style>

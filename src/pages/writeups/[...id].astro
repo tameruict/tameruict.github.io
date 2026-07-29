@@ -1,8 +1,8 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { getCollection, render } from "astro:content";
-import BaseLayout from "../../layouts/BaseLayout.astro";
 import WriteupCard from "../../components/WriteupCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("writeups", ({ data }) => !data.draft);
@@ -58,40 +58,39 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     </nav>
 
     <header class="article-header">
-      <div>
-        <div class="article-kicker">
-          <span>{platform}</span>
-          <span class:list={["difficulty", `difficulty-${difficulty.toLowerCase()}`]}>
-            {difficulty}
-          </span>
-        </div>
-
-        <h1>{title}</h1>
-        <p class="article-description">{description}</p>
-
-        <ul class="article-tags" aria-label="Thẻ bài viết">
-          {tags.map((tag) => <li>#{tag}</li>)}
-        </ul>
+      <div class="article-kicker">
+        <span>{platform}</span>
+        <span aria-hidden="true">/</span>
+        <span>{category}</span>
+        <span aria-hidden="true">/</span>
+        <span>{difficulty}</span>
       </div>
 
-      <div class="article-meta">
-        <div>
-          <span>Nền tảng</span>
-          <strong>{platform}</strong>
-        </div>
-        <div>
-          <span>Chủ đề</span>
-          <strong>{category}</strong>
-        </div>
-        <div>
-          <span>Ngày đăng</span>
-          <time datetime={publishedAt.toISOString()}>{formattedDate}</time>
-        </div>
-        {formattedUpdatedDate && (
+      <h1>{title}</h1>
+      <p class="article-description">{description}</p>
+
+      <div class="header-details">
+        <dl class="article-meta">
           <div>
-            <span>Cập nhật</span>
-            <time datetime={updatedAt?.toISOString()}>{formattedUpdatedDate}</time>
+            <dt>Đăng</dt>
+            <dd><time datetime={publishedAt.toISOString()}>{formattedDate}</time></dd>
           </div>
+          {
+            formattedUpdatedDate && (
+              <div>
+                <dt>Cập nhật</dt>
+                <dd>
+                  <time datetime={updatedAt?.toISOString()}>{formattedUpdatedDate}</time>
+                </dd>
+              </div>
+            )
+          }
+        </dl>
+
+        {tags.length > 0 && (
+          <ul class="article-tags" aria-label="Thẻ bài viết">
+            {tags.map((tag) => <li>#{tag}</li>)}
+          </ul>
         )}
       </div>
     </header>
@@ -101,20 +100,22 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
         <Content />
       </div>
 
-      {tocHeadings.length > 0 && (
-        <aside class="toc" aria-labelledby="toc-title">
-          <h2 id="toc-title">Trong bài này</h2>
-          <ol>
-            {
-              tocHeadings.map((heading) => (
-                <li class:list={{ nested: heading.depth === 3 }}>
-                  <a href={`#${heading.slug}`}>{heading.text}</a>
-                </li>
-              ))
-            }
-          </ol>
-        </aside>
-      )}
+      {
+        tocHeadings.length > 0 && (
+          <aside class="toc">
+            <nav aria-labelledby="toc-title">
+              <p id="toc-title">Trong bài này</p>
+              <ol>
+                {tocHeadings.map((heading) => (
+                  <li class:list={{ nested: heading.depth === 3 }}>
+                    <a href={`#${heading.slug}`}>{heading.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </aside>
+        )
+      }
     </div>
   </article>
 
@@ -122,10 +123,13 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     relatedPosts.length > 0 && (
       <section class="related shell" aria-labelledby="related-title">
         <header>
-          <h2 id="related-title">Bài viết liên quan</h2>
+          <h2 id="related-title">Đọc tiếp</h2>
+          <p>Các bài có cùng nền tảng hoặc kỹ thuật liên quan.</p>
         </header>
-        <div class="related-grid">
-          {relatedPosts.map((relatedPost) => <WriteupCard post={relatedPost} />)}
+        <div class="related-list">
+          {relatedPosts.map((relatedPost) => (
+            <WriteupCard post={relatedPost} titleAs="h3" />
+          ))}
         </div>
       </section>
     )
@@ -134,124 +138,141 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 
 <style>
   .article-shell {
-    padding-block: clamp(3rem, 6vw, 5rem);
+    padding-block: clamp(2.5rem, 6vw, 5rem) clamp(4rem, 8vw, 7rem);
   }
 
   .breadcrumb {
     display: flex;
-    margin-bottom: 3rem;
+    min-height: 2.75rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+    align-items: center;
     flex-wrap: wrap;
-    gap: 0.45rem;
+    gap: 0.4rem;
     color: var(--ink-soft);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
   }
 
   .breadcrumb a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
     color: var(--accent-strong);
   }
 
+  .breadcrumb span[aria-current="page"] {
+    max-width: 28rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .article-header {
-    max-width: none;
+    max-width: 58rem;
+    padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+    border-bottom: 1px solid var(--line-strong);
   }
 
   .article-kicker {
     display: flex;
-    margin-bottom: 1.2rem;
     align-items: center;
-    gap: 0.8rem;
+    flex-wrap: wrap;
+    gap: 0.35rem;
     color: var(--accent-strong);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 750;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .difficulty {
-    padding: 0.24rem 0.58rem;
-    border: 1px solid currentColor;
-    border-radius: 999px;
-  }
-
-  .difficulty-easy {
-    color: var(--success);
-  }
-
-  .difficulty-medium {
-    color: var(--warning);
-  }
-
-  .difficulty-hard,
-  .difficulty-insane {
-    color: var(--accent);
-  }
-
-  .difficulty-insane {
-    background: var(--accent);
-    color: var(--paper);
+    font-size: 0.7rem;
+    font-weight: 700;
   }
 
   .article-header h1 {
-    max-width: 15ch;
-    margin: 0;
-    color: var(--ink);
+    max-width: 16ch;
+    margin: 1rem 0 0;
     font-family: var(--font-display);
-    font-size: clamp(2.6rem, 6vw, 4.8rem);
+    font-size: clamp(2.7rem, 6.5vw, 5.4rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
     line-height: 1;
-    letter-spacing: -0.04em;
     text-wrap: balance;
   }
 
   .article-description {
-    max-width: 45rem;
-    margin: 1.8rem 0 0;
+    max-width: 48rem;
+    margin: 1.35rem 0 0;
     color: var(--ink-soft);
-    font-size: clamp(1rem, 2vw, 1.22rem);
+    font-size: clamp(1rem, 0.94rem + 0.34vw, 1.18rem);
     line-height: 1.65;
+  }
+
+  .header-details {
+    display: flex;
+    margin-top: 2rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
   }
 
   .article-meta {
     display: flex;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-    gap: 0.65rem 1.4rem;
-    color: var(--ink-soft);
+    margin: 0;
+    gap: 1rem 2rem;
+  }
+
+  .article-meta div {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .article-meta dt,
+  .article-meta dd,
+  .article-tags {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
+  }
+
+  .article-meta dt {
+    color: var(--ink-soft);
+  }
+
+  .article-meta dd {
+    margin: 0;
+    color: var(--ink);
+    font-weight: 700;
   }
 
   .article-tags {
     display: flex;
-    margin: 1rem 0 0;
+    max-width: 34rem;
+    margin: 0;
     padding: 0;
     flex-wrap: wrap;
-    gap: 0.5rem 0.85rem;
+    justify-content: flex-end;
+    gap: 0.4rem 0.75rem;
     color: var(--accent-strong);
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
     list-style: none;
   }
 
   .article-grid {
     display: grid;
-    margin-top: clamp(3rem, 6vw, 5rem);
+    margin-top: clamp(3rem, 7vw, 5rem);
     align-items: start;
-    grid-template-columns: minmax(0, 48rem) minmax(12rem, 1fr);
-    gap: clamp(3rem, 8vw, 8rem);
+    grid-template-columns: minmax(0, var(--content-width)) minmax(12rem, 15rem);
+    gap: clamp(3rem, 8vw, 7rem);
   }
 
   .toc {
     position: sticky;
-    top: 2rem;
+    top: 6rem;
     padding-top: 1rem;
     border-top: 2px solid var(--accent);
   }
 
-  .toc h2 {
-    margin: 0 0 1rem;
-    font-family: var(--font-display);
-    font-size: 1.25rem;
+  .toc p {
+    margin: 0 0 0.9rem;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
   }
 
   .toc ol {
@@ -261,64 +282,103 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
   }
 
   .toc li + li {
-    margin-top: 0.65rem;
+    margin-top: 0.6rem;
   }
 
   .toc .nested {
-    padding-left: 1rem;
+    padding-left: 0.85rem;
   }
 
   .toc a {
+    display: block;
     color: var(--ink-soft);
-    font-size: 0.82rem;
-    line-height: 1.4;
+    font-size: 0.78rem;
+    line-height: 1.45;
     text-decoration: none;
   }
 
   .toc a:hover {
     color: var(--accent-strong);
+    text-decoration: underline;
   }
 
   .related {
-    padding-block: clamp(3rem, 6vw, 5rem);
-    border-top: 1px solid var(--line);
+    padding-block: clamp(3.5rem, 7vw, 5.5rem);
+    border-top: 1px solid var(--line-strong);
   }
 
   .related header {
-    margin-bottom: 2.2rem;
+    margin-bottom: 1.75rem;
   }
 
   .related h2 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    font-size: clamp(1.8rem, 1.5rem + 1vw, 2.6rem);
+    font-weight: 650;
     letter-spacing: -0.03em;
   }
 
-  .related-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(1.5rem, 5vw, 5rem);
+  .related header p {
+    margin: 0.45rem 0 0;
+    color: var(--ink-soft);
+    font-size: 0.88rem;
   }
 
-  @media (max-width: 52rem) {
+  .related-list {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 58rem) {
     .article-grid {
       grid-template-columns: 1fr;
+      gap: 2rem;
     }
 
     .toc {
       position: static;
       grid-row: 1;
+      max-width: var(--content-width);
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-top: 2px solid var(--accent);
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      background: var(--surface);
+    }
+
+    .toc ol {
+      columns: 2;
+      column-gap: 2rem;
+    }
+
+    .toc li {
+      break-inside: avoid;
+    }
+
+    .toc a {
+      display: flex;
+      min-height: 2.75rem;
+      align-items: center;
     }
   }
 
   @media (max-width: 42rem) {
     .article-header h1 {
-      font-size: clamp(2.7rem, 14vw, 4.2rem);
+      font-size: clamp(2.65rem, 13vw, 4.2rem);
     }
 
-    .related-grid {
-      grid-template-columns: 1fr;
+    .header-details,
+    .article-meta {
+      flex-direction: column;
+    }
+
+    .article-tags {
+      justify-content: flex-start;
+    }
+
+    .toc ol {
+      columns: 1;
     }
   }
 </style>

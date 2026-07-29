@@ -1,300 +1,311 @@
 ---
 import { getCollection } from "astro:content";
-import BaseLayout from "../layouts/BaseLayout.astro";
 import WriteupCard from "../components/WriteupCard.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
 
 const posts = (await getCollection("writeups", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
-const platforms = [...new Set(posts.map((post) => post.data.platform))].sort((a, b) =>
-  a.localeCompare(b),
-);
+const featuredPost = posts.find(({ data }) => data.featured) ?? posts[0];
+const recentPosts = posts.filter(({ id }) => id !== featuredPost?.id).slice(0, 4);
+const platformCounts = [...new Set(posts.map(({ data }) => data.platform))]
+  .map((platform) => ({
+    platform,
+    count: posts.filter(({ data }) => data.platform === platform).length,
+  }))
+  .sort((a, b) => a.platform.localeCompare(b.platform));
 ---
 
-<BaseLayout description="Write-up CTF được phân loại theo nền tảng, chủ đề và độ khó.">
-  <header class="page-header shell">
-    <h1>Write-ups</h1>
-  </header>
-
-  <section class="archive shell" aria-label="Danh sách write-up">
-    <form class="filters" data-filter-form role="search">
-      <div class="field search-field">
-        <label for="writeup-search">Tìm kiếm</label>
-        <input
-          id="writeup-search"
-          name="query"
-          type="search"
-          autocomplete="off"
-          placeholder="Tên challenge, tag hoặc kỹ thuật"
-        />
+<BaseLayout description="Ghi chép kỹ thuật về CTF, phân tích lỗ hổng và quy trình kiểm chứng trong security labs.">
+  <section class="intro shell" aria-labelledby="intro-title">
+    <div class="intro-copy">
+      <p class="section-label">Technical field notes</p>
+      <h1 id="intro-title">Ghi lại quá trình.<br />Giữ lại bằng chứng.</h1>
+      <p>
+        Write-up CTF tập trung vào cách quan sát, kiểm chứng và rút kinh nghiệm từ mỗi challenge.
+      </p>
+      <div class="intro-actions">
+        <a class="primary-link" href="/writeups/">Xem write-up</a>
+        <a class="text-link" href="/about/">Cách nội dung được công bố</a>
       </div>
-
-      <div class="field">
-        <label for="platform-filter">Nền tảng</label>
-        <select id="platform-filter" name="platform">
-          <option value="">Tất cả</option>
-          {platforms.map((platform) => <option value={platform}>{platform}</option>)}
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="difficulty-filter">Độ khó</label>
-        <select id="difficulty-filter" name="difficulty">
-          <option value="">Tất cả</option>
-          <option value="Easy">Easy</option>
-          <option value="Medium">Medium</option>
-          <option value="Hard">Hard</option>
-          <option value="Insane">Insane</option>
-        </select>
-      </div>
-
-      <button class="clear-button" type="reset">Đặt lại</button>
-    </form>
-
-    <div class="result-count" aria-live="polite">
-      <strong data-visible-count>{posts.length}</strong>
-      <span>trên {posts.length} bài</span>
     </div>
 
-    {
-      posts.length > 0 ? (
-        <div class="writeup-list" data-writeup-list>
-          {posts.map((post) => <WriteupCard post={post} />)}
-        </div>
-      ) : (
-        <div class="empty-state static-empty">
-          <h2>Chưa có bài viết</h2>
-          <p>Đổi một bài từ draft sang public để hiển thị tại đây.</p>
-        </div>
-      )
-    }
-
-    <div class="empty-state" data-filter-empty hidden aria-live="polite">
-      <h2>Không có kết quả</h2>
-      <p>Hãy điều chỉnh từ khóa hoặc bộ lọc.</p>
-      <button type="button" data-empty-reset>Hiện tất cả</button>
-    </div>
+    <dl class="site-summary" aria-label="Tổng quan nội dung">
+      <div>
+        <dt>Bài viết</dt>
+        <dd>{posts.length}</dd>
+      </div>
+      <div>
+        <dt>Nền tảng</dt>
+        <dd>{platformCounts.length}</dd>
+      </div>
+      <div>
+        <dt>Định dạng</dt>
+        <dd>Markdown</dd>
+      </div>
+    </dl>
   </section>
 
-  <script>
-    const form = document.querySelector<HTMLFormElement>("[data-filter-form]");
-    const cards = [...document.querySelectorAll<HTMLElement>("[data-writeup-card]")];
-    const visibleCount = document.querySelector<HTMLElement>("[data-visible-count]");
-    const emptyState = document.querySelector<HTMLElement>("[data-filter-empty]");
-    const searchInput = document.querySelector<HTMLInputElement>("#writeup-search");
-    const platformSelect = document.querySelector<HTMLSelectElement>("#platform-filter");
-    const difficultySelect = document.querySelector<HTMLSelectElement>("#difficulty-filter");
+  {
+    featuredPost && (
+      <section class="featured-section shell" aria-labelledby="featured-title">
+        <header class="section-heading">
+          <p class="section-label">Bài nổi bật</p>
+          <h2 id="featured-title">Đọc từ một case hoàn chỉnh</h2>
+        </header>
+        <WriteupCard post={featuredPost} featured titleAs="h3" />
+      </section>
+    )
+  }
 
-    const normalize = (value: string) =>
-      value
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLocaleLowerCase("vi")
-        .trim();
+  <section class="recent-section shell" aria-labelledby="recent-title">
+    <header class="section-heading heading-with-link">
+      <div>
+        <h2 id="recent-title">Mới cập nhật</h2>
+        <p>Các ghi chú mới nhất, sắp xếp theo ngày công bố.</p>
+      </div>
+      <a href="/writeups/">Xem toàn bộ</a>
+    </header>
 
-    const applyFilters = () => {
-      if (!searchInput || !platformSelect || !difficultySelect) return;
+    {
+      recentPosts.length > 0 ? (
+        <div class="recent-list">
+          {recentPosts.map((post) => <WriteupCard post={post} titleAs="h3" />)}
+        </div>
+      ) : (
+        <p class="empty-copy">Chưa có thêm bài viết.</p>
+      )
+    }
+  </section>
 
-      const query = normalize(searchInput.value);
-      const platform = platformSelect.value;
-      const difficulty = difficultySelect.value;
-      let count = 0;
-
-      cards.forEach((card) => {
-        const searchText = normalize(card.dataset.search ?? "");
-        const matches =
-          (!query || searchText.includes(query)) &&
-          (!platform || card.dataset.platform === platform) &&
-          (!difficulty || card.dataset.difficulty === difficulty);
-
-        card.hidden = !matches;
-        if (matches) count += 1;
-      });
-
-      if (visibleCount) visibleCount.textContent = String(count);
-      if (emptyState) emptyState.hidden = count !== 0 || cards.length === 0;
-    };
-
-    form?.addEventListener("input", applyFilters);
-    form?.addEventListener("reset", () => window.setTimeout(applyFilters, 0));
-
-    document.querySelector<HTMLButtonElement>("[data-empty-reset]")?.addEventListener("click", () => {
-      form?.reset();
-      window.setTimeout(() => {
-        applyFilters();
-        searchInput?.focus();
-      }, 0);
-    });
-  </script>
+  <section class="platform-section shell" aria-labelledby="platform-title">
+    <header class="section-heading">
+      <h2 id="platform-title">Duyệt theo nền tảng</h2>
+    </header>
+    <div class="platform-links">
+      {
+        platformCounts.map(({ platform, count }) => (
+          <a href={`/writeups/?platform=${encodeURIComponent(platform)}`}>
+            <span>{platform}</span>
+            <strong>{count}</strong>
+          </a>
+        ))
+      }
+    </div>
+  </section>
 </BaseLayout>
 
 <style>
-  .page-header {
-    padding: 3.5rem 0 2rem;
-    border-bottom: 1px solid var(--line-strong);
-  }
-
-  .page-header h1 {
-    margin: 0;
-    color: var(--ink);
-    font-family: var(--font-display);
-    font-size: clamp(2.4rem, 4vw, 3.5rem);
-    line-height: 1;
-    letter-spacing: -0.04em;
-  }
-
-  .result-count {
-    color: var(--ink-soft);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-  }
-
-  .archive {
-    padding-block: 2rem clamp(4rem, 8vw, 7rem);
-  }
-
-  .filters {
+  .intro {
     display: grid;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--line);
-    grid-template-columns: minmax(14rem, 1.8fr) minmax(10rem, 0.8fr) minmax(9rem, 0.7fr) auto;
-    gap: 0.85rem;
+    min-height: min(42rem, calc(100dvh - 4.25rem));
+    padding-block: clamp(4rem, 10vw, 8rem);
+    align-items: end;
+    grid-template-columns: minmax(0, 1.5fr) minmax(15rem, 0.5fr);
+    gap: clamp(3rem, 9vw, 8rem);
   }
 
-  .field {
-    min-width: 0;
-  }
-
-  .field label {
-    display: block;
-    margin-bottom: 0.35rem;
-    color: var(--ink-soft);
-    font-size: 0.75rem;
+  .intro h1 {
+    max-width: 13ch;
+    margin: 1rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 6.2rem);
     font-weight: 600;
+    letter-spacing: -0.055em;
+    line-height: 0.98;
+    text-wrap: balance;
   }
 
-  .field input,
-  .field select {
-    width: 100%;
-    min-height: 2.75rem;
-    padding: 0.55rem 0.7rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-    font-size: 0.88rem;
-  }
-
-  .field input:focus,
-  .field select:focus {
-    border-color: var(--accent);
-    box-shadow: var(--shadow-focus);
-    outline: none;
-  }
-
-  .field input::placeholder {
+  .intro-copy > p:not(.section-label) {
+    max-width: 48ch;
+    margin: 1.5rem 0 0;
     color: var(--ink-soft);
+    font-size: clamp(1rem, 0.94rem + 0.35vw, 1.18rem);
   }
 
-  .clear-button {
-    min-height: 2.75rem;
-    margin-top: 1.55rem;
-    padding: 0.5rem 0.9rem;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--ink);
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-
-  .clear-button:hover {
-    border-color: var(--accent);
-    color: var(--accent-strong);
-  }
-
-  .result-count {
+  .intro-actions {
     display: flex;
-    margin-block: 1.25rem 0;
-    justify-content: flex-end;
-    gap: 0.35rem;
+    margin-top: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem 1.25rem;
   }
 
-  .result-count strong {
-    color: var(--ink);
+  .primary-link,
+  .text-link {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    font-size: 0.86rem;
+    font-weight: 700;
   }
 
-  .writeup-list {
-    display: grid;
-    margin-top: 1rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: clamp(2rem, 5vw, 5rem);
-  }
-
-  .empty-state {
-    max-width: 34rem;
-    margin: 4rem auto;
-    padding: 2.5rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    text-align: center;
-  }
-
-  .empty-state[hidden] {
-    display: none;
-  }
-
-  .empty-state h2 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-  }
-
-  .empty-state p {
-    margin: 0.5rem 0 0;
-    color: var(--ink-soft);
-  }
-
-  .empty-state button {
-    min-height: 2.6rem;
-    margin-top: 1.25rem;
-    padding: 0.5rem 0.85rem;
+  .primary-link {
+    padding-inline: 1rem;
     border: 1px solid var(--accent);
     border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--accent-strong);
-    font-weight: 600;
+    background: var(--accent);
+    color: #ffffff;
+    text-decoration: none;
   }
 
-  @media (max-width: 54rem) {
-    .filters {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+  .primary-link:hover {
+    background: var(--accent-strong);
+  }
+
+  .text-link {
+    color: var(--accent-strong);
+  }
+
+  .site-summary {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .site-summary div {
+    display: flex;
+    min-height: 3.7rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .site-summary dt {
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+
+  .site-summary dd {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .featured-section,
+  .recent-section,
+  .platform-section {
+    padding-block: clamp(3.5rem, 8vw, 6.5rem);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .section-heading {
+    max-width: 48rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .section-heading h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 1.4rem + 1.2vw, 2.75rem);
+    font-weight: 650;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+  }
+
+  .section-heading .section-label + h2 {
+    margin-top: 0.65rem;
+  }
+
+  .section-heading p:not(.section-label) {
+    margin: 0.55rem 0 0;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+  }
+
+  .heading-with-link {
+    display: flex;
+    max-width: none;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .heading-with-link > a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    color: var(--accent-strong);
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .platform-links {
+    display: grid;
+    border-top: 1px solid var(--line);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(2rem, 8vw, 7rem);
+  }
+
+  .platform-links a {
+    display: flex;
+    min-height: 4.25rem;
+    padding-block: 0.65rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+  }
+
+  .platform-links a:hover span {
+    color: var(--accent-strong);
+  }
+
+  .platform-links span {
+    font-weight: 650;
+  }
+
+  .platform-links strong {
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .empty-copy {
+    color: var(--ink-soft);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .primary-link {
+      color: #0c1211;
+    }
+  }
+
+  @media (max-width: 48rem) {
+    .intro {
+      min-height: auto;
+      grid-template-columns: 1fr;
+      gap: 3.5rem;
     }
 
-    .search-field {
-      grid-column: 1 / -1;
-    }
-
-    .clear-button {
-      margin-top: 0;
+    .site-summary {
+      max-width: 28rem;
     }
   }
 
   @media (max-width: 42rem) {
-    .page-header {
-      padding-top: 2.75rem;
+    .intro {
+      padding-block: 3.75rem 4.5rem;
     }
 
-    .filters,
-    .writeup-list {
+    .intro h1 {
+      font-size: clamp(2.8rem, 13vw, 4.5rem);
+    }
+
+    .heading-with-link {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .platform-links {
       grid-template-columns: 1fr;
-    }
-
-    .search-field {
-      grid-column: auto;
-    }
-
-    .clear-button {
-      width: 100%;
     }
   }
 </style>
