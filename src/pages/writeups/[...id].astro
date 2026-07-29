@@ -138,6 +138,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 
 <style>
   .article-shell {
+    width: min(calc(100% - clamp(2rem, 5vw, 6rem)), 112rem);
     padding-block: clamp(2.5rem, 6vw, 5rem) clamp(4rem, 8vw, 7rem);
   }
 
@@ -168,7 +169,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
   }
 
   .article-header {
-    max-width: 58rem;
+    max-width: 72rem;
     padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
     border-bottom: 1px solid var(--line-strong);
   }
@@ -256,13 +257,27 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     display: grid;
     margin-top: clamp(3rem, 7vw, 5rem);
     align-items: start;
-    grid-template-columns: minmax(0, var(--content-width)) minmax(12rem, 15rem);
-    gap: clamp(3rem, 8vw, 7rem);
+    grid-template-columns: minmax(0, 1fr) 13rem;
+    gap: clamp(2rem, 4vw, 4rem);
+  }
+
+  .article-grid .prose {
+    width: 100%;
+    max-width: none;
+  }
+
+  .article-grid :global(.prose > :where(p, ul, ol, blockquote, h2, h3, h4)) {
+    max-width: 82ch;
+  }
+
+  .article-grid :global(.prose > p:has(> img)) {
+    max-width: none;
   }
 
   .toc {
     position: sticky;
     top: 6rem;
+    width: 100%;
     padding-top: 1rem;
     border-top: 2px solid var(--accent);
   }
@@ -330,7 +345,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     grid-template-columns: 1fr;
   }
 
-  @media (max-width: 58rem) {
+  @media (max-width: 68rem) {
     .article-grid {
       grid-template-columns: 1fr;
       gap: 2rem;
@@ -339,7 +354,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     .toc {
       position: static;
       grid-row: 1;
-      max-width: var(--content-width);
+      max-width: 52rem;
       padding: 1rem;
       border: 1px solid var(--line);
       border-top: 2px solid var(--accent);
@@ -364,6 +379,10 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
   }
 
   @media (max-width: 42rem) {
+    .article-shell {
+      width: min(calc(100% - 1.25rem), 112rem);
+    }
+
     .article-header h1 {
       font-size: clamp(2.65rem, 13vw, 4.2rem);
     }
