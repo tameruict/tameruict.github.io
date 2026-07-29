@@ -19,9 +19,10 @@
   --radius-md: 0.8rem;
   --shadow-focus: 0 0 0 3px rgb(180 35 66 / 18%);
   --header-surface: rgb(255 247 247 / 92%);
-  --font-display: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --font-display: "Times New Roman", Times, serif;
+  --font-sans: "Times New Roman", Times, serif;
+  --font-mono: "Times New Roman", Times, serif;
+  --font-code: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
   --page-width: 78rem;
   --content-width: 48rem;
 }
@@ -270,7 +271,7 @@ select {
   border-radius: 0.25rem;
   background: var(--paper-strong);
   color: var(--accent-strong);
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 0.88em;
 }
 
@@ -289,6 +290,7 @@ select {
   border: 0;
   background: transparent;
   color: inherit;
+  font-family: var(--font-code);
   font-size: 0.88rem;
   line-height: 1.65;
 }
