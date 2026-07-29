@@ -1,0 +1,76 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-shell">
+    <div>
+      <p class="footer-name">Tameru Write-ups</p>
+      <p class="footer-note">Ghi lại cách nghĩ, không chỉ ghi lại flag.</p>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/tameruict" rel="me">GitHub</a>
+      <a href="/rss.xml">RSS</a>
+      <span>© {year}</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: clamp(5rem, 10vw, 8rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .footer-shell {
+    display: flex;
+    width: min(calc(100% - 2rem), var(--page-width));
+    min-height: 9rem;
+    margin-inline: auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .footer-name,
+  .footer-note {
+    margin: 0;
+  }
+
+  .footer-name {
+    color: var(--accent-strong);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .footer-note {
+    margin-top: 0.3rem;
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent-strong);
+  }
+
+  @media (max-width: 37rem) {
+    .footer-shell {
+      width: min(calc(100% - 1.25rem), var(--page-width));
+      min-height: 10rem;
+      align-items: flex-start;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.2rem;
+    }
+  }
+</style>

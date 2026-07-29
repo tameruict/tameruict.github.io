@@ -1,0 +1,325 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import WriteupCard from "../../components/WriteupCard.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("writeups", ({ data }) => !data.draft);
+
+  return posts.map((post) => ({
+    params: { id: post.id },
+    props: { post, posts },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<"writeups">;
+  posts: CollectionEntry<"writeups">[];
+}
+
+const { post, posts } = Astro.props;
+const { Content, headings } = await render(post);
+const { title, description, platform, category, difficulty, publishedAt, updatedAt, tags, cover } =
+  post.data;
+const formattedDate = publishedAt.toLocaleDateString("vi-VN", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
+const formattedUpdatedDate = updatedAt?.toLocaleDateString("vi-VN", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
+const relatedPosts = posts
+  .filter((candidate) => candidate.id !== post.id)
+  .map((candidate) => ({
+    post: candidate,
+    score:
+      (candidate.data.platform === platform ? 3 : 0) +
+      candidate.data.tags.filter((tag) => tags.includes(tag)).length,
+  }))
+  .filter(({ score }) => score > 0)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 2)
+  .map(({ post: candidate }) => candidate);
+const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
+---
+
+<BaseLayout title={title} description={description} image={cover} article>
+  <article class="article-shell shell">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a href="/">Trang chủ</a>
+      <span aria-hidden="true">/</span>
+      <a href="/writeups/">Write-ups</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{title}</span>
+    </nav>
+
+    <header class="article-header">
+      <div>
+        <div class="article-kicker">
+          <span>{platform}</span>
+          <span class:list={["difficulty", `difficulty-${difficulty.toLowerCase()}`]}>
+            {difficulty}
+          </span>
+        </div>
+
+        <h1>{title}</h1>
+        <p class="article-description">{description}</p>
+
+        <ul class="article-tags" aria-label="Thẻ bài viết">
+          {tags.map((tag) => <li>#{tag}</li>)}
+        </ul>
+      </div>
+
+      <div class="article-meta">
+        <div>
+          <span>Nền tảng</span>
+          <strong>{platform}</strong>
+        </div>
+        <div>
+          <span>Chủ đề</span>
+          <strong>{category}</strong>
+        </div>
+        <div>
+          <span>Ngày đăng</span>
+          <time datetime={publishedAt.toISOString()}>{formattedDate}</time>
+        </div>
+        {formattedUpdatedDate && (
+          <div>
+            <span>Cập nhật</span>
+            <time datetime={updatedAt?.toISOString()}>{formattedUpdatedDate}</time>
+          </div>
+        )}
+      </div>
+    </header>
+
+    <div class="article-grid">
+      <div class="prose">
+        <Content />
+      </div>
+
+      {tocHeadings.length > 0 && (
+        <aside class="toc" aria-labelledby="toc-title">
+          <h2 id="toc-title">Trong bài này</h2>
+          <ol>
+            {
+              tocHeadings.map((heading) => (
+                <li class:list={{ nested: heading.depth === 3 }}>
+                  <a href={`#${heading.slug}`}>{heading.text}</a>
+                </li>
+              ))
+            }
+          </ol>
+        </aside>
+      )}
+    </div>
+  </article>
+
+  {
+    relatedPosts.length > 0 && (
+      <section class="related shell" aria-labelledby="related-title">
+        <header>
+          <p class="eyebrow">Đọc tiếp</p>
+          <h2 id="related-title">Write-up liên quan</h2>
+        </header>
+        <div class="related-grid">
+          {relatedPosts.map((relatedPost) => <WriteupCard post={relatedPost} />)}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .article-shell {
+    padding-block: clamp(3.5rem, 8vw, 7rem);
+  }
+
+  .breadcrumb {
+    display: flex;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .breadcrumb a {
+    color: var(--accent-strong);
+  }
+
+  .article-header {
+    max-width: none;
+  }
+
+  .article-kicker {
+    display: flex;
+    margin-bottom: 1.2rem;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .difficulty {
+    padding: 0.24rem 0.58rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+  }
+
+  .difficulty-easy {
+    color: var(--success);
+  }
+
+  .difficulty-medium {
+    color: var(--warning);
+  }
+
+  .difficulty-hard,
+  .difficulty-insane {
+    color: var(--accent);
+  }
+
+  .difficulty-insane {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  .article-header h1 {
+    max-width: 15ch;
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+
+  .article-description {
+    max-width: 45rem;
+    margin: 1.8rem 0 0;
+    color: var(--ink-soft);
+    font-size: clamp(1rem, 2vw, 1.22rem);
+    line-height: 1.65;
+  }
+
+  .article-meta {
+    display: flex;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    gap: 0.65rem 1.4rem;
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .article-tags {
+    display: flex;
+    margin: 1rem 0 0;
+    padding: 0;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.85rem;
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    list-style: none;
+  }
+
+  .article-grid {
+    display: grid;
+    margin-top: clamp(4rem, 9vw, 7.5rem);
+    align-items: start;
+    grid-template-columns: minmax(0, 48rem) minmax(12rem, 1fr);
+    gap: clamp(3rem, 8vw, 8rem);
+  }
+
+  .toc {
+    position: sticky;
+    top: 2rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--accent);
+  }
+
+  .toc h2 {
+    margin: 0 0 1rem;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+  }
+
+  .toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc li + li {
+    margin-top: 0.65rem;
+  }
+
+  .toc .nested {
+    padding-left: 1rem;
+  }
+
+  .toc a {
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .toc a:hover {
+    color: var(--accent-strong);
+  }
+
+  .related {
+    padding-block: clamp(4rem, 8vw, 7rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .related header {
+    margin-bottom: 2.2rem;
+  }
+
+  .related h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.6rem);
+    letter-spacing: -0.035em;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.5rem, 5vw, 5rem);
+  }
+
+  @media (max-width: 52rem) {
+    .article-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .toc {
+      position: static;
+      grid-row: 1;
+    }
+  }
+
+  @media (max-width: 42rem) {
+    .article-header h1 {
+      font-size: clamp(2.7rem, 14vw, 4.2rem);
+    }
+
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

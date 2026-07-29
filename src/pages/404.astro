@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Không tìm thấy trang" description="Trang anh đang tìm không tồn tại.">
+  <section class="not-found shell">
+    <p class="code">404</p>
+    <h1>Manh mối này không tồn tại.</h1>
+    <p>Đường dẫn có thể đã đổi hoặc write-up vẫn đang ở trạng thái draft.</p>
+    <a href="/">Quay về trang chủ <span aria-hidden="true">→</span></a>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: flex;
+    min-height: 70dvh;
+    padding-block: 5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .code {
+    margin: 0 0 1rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 800;
+  }
+
+  h1 {
+    max-width: 12ch;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+  }
+
+  .not-found > p:not(.code) {
+    max-width: 36rem;
+    margin: 1.5rem 0 0;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+
+  a {
+    margin-top: 2rem;
+    color: var(--accent-strong);
+    font-weight: 750;
+  }
+</style>

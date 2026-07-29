@@ -1,0 +1,50 @@
+---
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  article?: boolean;
+}
+
+const {
+  title = "Tameru Write-ups",
+  description = "Ghi chép CTF, phân tích lỗ hổng và những bài học rút ra sau mỗi challenge.",
+  image,
+  article = false,
+} = Astro.props;
+
+const pageTitle = title === "Tameru Write-ups" ? title : `${title} | Tameru Write-ups`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
+const imageURL = image ? new URL(image, Astro.site ?? Astro.url) : undefined;
+---
+
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#fff7f7" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    <meta property="og:type" content={article ? "article" : "website"} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    {imageURL && <meta property="og:image" content={imageURL} />}
+    <meta name="twitter:card" content={imageURL ? "summary_large_image" : "summary"} />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Đi đến nội dung</a>
+    <SiteHeader />
+    <main id="main-content">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

@@ -1,0 +1,172 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import WriteupCard from "../../components/WriteupCard.astro";
+
+const posts = (await getCollection("writeups", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+);
+const platformGroups = [...new Set(posts.map(({ data }) => data.platform))]
+  .sort((a, b) => a.localeCompare(b))
+  .map((platform) => ({
+    platform,
+    posts: posts.filter(({ data }) => data.platform === platform),
+  }));
+---
+
+<BaseLayout
+  title="Tất cả write-up"
+  description="Kho write-up CTF được nhóm theo nền tảng và gắn mức độ khó rõ ràng."
+>
+  <header class="archive-hero shell">
+    <p class="eyebrow">Kho write-up</p>
+    <h1>Tìm theo sân chơi</h1>
+    <p>
+      Mỗi bài ghi lại command, hướng suy luận và phần kỹ thuật có thể dùng lại ở challenge khác.
+    </p>
+  </header>
+
+  <nav class="platform-nav shell" aria-label="Chọn nền tảng">
+    {
+      platformGroups.map(({ platform, posts: platformPosts }) => {
+        const anchor = platform.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        return (
+          <a href={`#${anchor}`}>
+            <span>{platform}</span>
+            <small>{platformPosts.length} bài</small>
+          </a>
+        );
+      })
+    }
+  </nav>
+
+  <div class="platform-groups shell">
+    {
+      platformGroups.map(({ platform, posts: platformPosts }) => {
+        const anchor = platform.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        return (
+          <section class="platform-group" id={anchor} aria-labelledby={`${anchor}-title`}>
+            <header>
+              <h2 id={`${anchor}-title`}>{platform}</h2>
+              <p>{platformPosts.length} write-up</p>
+            </header>
+            <div class="writeup-grid">
+              {platformPosts.map((post) => <WriteupCard post={post} />)}
+            </div>
+          </section>
+        );
+      })
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .archive-hero {
+    padding-block: clamp(4rem, 10vw, 8rem);
+  }
+
+  .archive-hero h1 {
+    max-width: 11ch;
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: clamp(3.4rem, 9vw, 7.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+  }
+
+  .archive-hero > p:last-child {
+    max-width: 38rem;
+    margin: 1.5rem 0 0;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+
+  .platform-nav {
+    display: grid;
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .platform-nav a {
+    display: flex;
+    min-height: 6.5rem;
+    padding: 1rem;
+    justify-content: space-between;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    color: var(--ink);
+    background: var(--surface);
+    text-decoration: none;
+    transition:
+      border-color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .platform-nav a:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .platform-nav span {
+    align-self: flex-end;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+  }
+
+  .platform-nav small {
+    color: var(--accent-strong);
+    font-family: var(--font-mono);
+  }
+
+  .platform-groups {
+    padding-bottom: clamp(5rem, 10vw, 10rem);
+  }
+
+  .platform-group {
+    padding-block: clamp(3rem, 7vw, 6rem);
+    border-top: 1px solid var(--line-strong);
+    scroll-margin-top: 2rem;
+  }
+
+  .platform-group > header {
+    display: flex;
+    margin-bottom: 2.5rem;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .platform-group h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 4.5rem);
+    letter-spacing: -0.04em;
+  }
+
+  .platform-group header p {
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  .writeup-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1.5rem, 5vw, 5rem);
+  }
+
+  @media (max-width: 52rem) {
+    .platform-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 42rem) {
+    .platform-nav,
+    .writeup-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
