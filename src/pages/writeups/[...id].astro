@@ -122,8 +122,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     relatedPosts.length > 0 && (
       <section class="related shell" aria-labelledby="related-title">
         <header>
-          <p class="eyebrow">Đọc tiếp</p>
-          <h2 id="related-title">Write-up liên quan</h2>
+          <h2 id="related-title">Bài viết liên quan</h2>
         </header>
         <div class="related-grid">
           {relatedPosts.map((relatedPost) => <WriteupCard post={relatedPost} />)}
@@ -135,7 +134,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 
 <style>
   .article-shell {
-    padding-block: clamp(3.5rem, 8vw, 7rem);
+    padding-block: clamp(3rem, 6vw, 5rem);
   }
 
   .breadcrumb {
@@ -198,9 +197,9 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     margin: 0;
     color: var(--ink);
     font-family: var(--font-display);
-    font-size: clamp(3rem, 8vw, 6.5rem);
-    line-height: 0.96;
-    letter-spacing: -0.045em;
+    font-size: clamp(2.6rem, 6vw, 4.8rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
     text-wrap: balance;
   }
 
@@ -236,7 +235,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 
   .article-grid {
     display: grid;
-    margin-top: clamp(4rem, 9vw, 7.5rem);
+    margin-top: clamp(3rem, 6vw, 5rem);
     align-items: start;
     grid-template-columns: minmax(0, 48rem) minmax(12rem, 1fr);
     gap: clamp(3rem, 8vw, 8rem);
@@ -281,7 +280,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
   }
 
   .related {
-    padding-block: clamp(4rem, 8vw, 7rem);
+    padding-block: clamp(3rem, 6vw, 5rem);
     border-top: 1px solid var(--line);
   }
 
@@ -292,8 +291,8 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
   .related h2 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3.6rem);
-    letter-spacing: -0.035em;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    letter-spacing: -0.03em;
   }
 
   .related-grid {

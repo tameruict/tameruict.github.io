@@ -7,7 +7,6 @@ const isWriteups = pathname.startsWith("/writeups");
 <header class="site-header">
   <div class="header-shell">
     <a class="wordmark" href="/" aria-label="Tameru Write-ups, trang chủ">
-      <span class="wordmark-mark" aria-hidden="true">T</span>
       <span>
         <strong>Tameru</strong>
         <small>write-ups</small>
@@ -44,21 +43,8 @@ const isWriteups = pathname.startsWith("/writeups");
   .wordmark {
     display: inline-flex;
     align-items: center;
-    gap: 0.7rem;
     color: var(--accent-strong);
     text-decoration: none;
-  }
-
-  .wordmark-mark {
-    display: grid;
-    width: 2.15rem;
-    height: 2.15rem;
-    place-items: center;
-    border: 1px solid var(--accent);
-    border-radius: 50%;
-    font-family: var(--font-display);
-    font-size: 1.3rem;
-    font-style: italic;
   }
 
   .wordmark strong,
@@ -68,8 +54,10 @@ const isWriteups = pathname.startsWith("/writeups");
   }
 
   .wordmark strong {
-    font-family: var(--font-display);
+    color: var(--ink);
+    font-family: var(--font-sans);
     font-size: 1.05rem;
+    font-weight: 700;
   }
 
   .wordmark small {

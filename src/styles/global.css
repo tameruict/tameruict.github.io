@@ -19,8 +19,8 @@
   --radius-md: 0.8rem;
   --shadow-focus: 0 0 0 3px rgb(180 35 66 / 18%);
   --header-surface: rgb(255 247 247 / 92%);
-  --font-display: Georgia, "Times New Roman", serif;
-  --font-sans: "Segoe UI", Arial, sans-serif;
+  --font-display: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
   --page-width: 78rem;
   --content-width: 48rem;
@@ -40,24 +40,12 @@ html {
 body {
   min-width: 20rem;
   margin: 0;
-  background:
-    linear-gradient(rgb(180 35 66 / 2%), rgb(180 35 66 / 0%) 24rem),
-    var(--paper);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.65;
   text-rendering: optimizeLegibility;
-}
-
-body::before {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image: radial-gradient(rgb(100 43 56 / 7%) 0.6px, transparent 0.6px);
-  background-size: 6px 6px;
-  content: "";
-  pointer-events: none;
 }
 
 ::selection {
@@ -431,12 +419,6 @@ select {
   }
 
   body {
-    background:
-      linear-gradient(rgb(225 119 143 / 4%), rgb(225 119 143 / 0%) 24rem),
-      var(--paper);
-  }
-
-  body::before {
-    background-image: radial-gradient(rgb(244 190 202 / 7%) 0.6px, transparent 0.6px);
+    background: var(--paper);
   }
 }

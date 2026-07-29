@@ -3,10 +3,9 @@ import type { CollectionEntry } from "astro:content";
 
 interface Props {
   post: CollectionEntry<"writeups">;
-  featured?: boolean;
 }
 
-const { post, featured = false } = Astro.props;
+const { post } = Astro.props;
 const { title, description, platform, category, difficulty, publishedAt, tags } = post.data;
 const formattedDate = publishedAt.toLocaleDateString("vi-VN", {
   day: "2-digit",
@@ -19,7 +18,7 @@ const searchableText = [title, description, platform, category, difficulty, ...t
 ---
 
 <article
-  class:list={["writeup-card", { featured }]}
+  class="writeup-card"
   data-writeup-card
   data-platform={platform}
   data-difficulty={difficulty}
@@ -31,49 +30,30 @@ const searchableText = [title, description, platform, category, difficulty, ...t
       <span class:list={["difficulty", `difficulty-${difficulty.toLowerCase()}`]}>{difficulty}</span>
     </div>
 
-    <div class="card-copy">
-      <p class="category">{category}</p>
-      <h3>{title}</h3>
-      <p class="description">{description}</p>
-    </div>
+    <h2>{title}</h2>
+    <p class="description">{description}</p>
 
     <div class="card-bottom">
+      <span>{category}</span>
       <time datetime={publishedAt.toISOString()}>{formattedDate}</time>
-      <ul class="tag-list" aria-label="Thẻ bài viết">
-        {tags.slice(0, featured ? 4 : 3).map((tag) => <li>#{tag}</li>)}
-      </ul>
-      <span class="read-more" aria-hidden="true">Đọc bài <span>→</span></span>
     </div>
   </a>
 </article>
 
 <style>
   .writeup-card {
-    position: relative;
     min-width: 0;
-    border-top: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line);
   }
 
-  .writeup-card::before {
-    position: absolute;
-    top: -1px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--accent);
-    content: "";
-    transition: width 240ms ease;
-  }
-
-  .writeup-card:hover::before {
-    width: 100%;
+  .writeup-card[hidden] {
+    display: none;
   }
 
   .card-link {
-    display: flex;
-    min-height: 22rem;
-    padding: 1.2rem 0.2rem 1rem;
-    flex-direction: column;
+    display: block;
+    min-height: 15rem;
+    padding: 1.5rem 0;
     text-decoration: none;
   }
 
@@ -81,18 +61,13 @@ const searchableText = [title, description, platform, category, difficulty, ...t
   .card-bottom {
     display: flex;
     align-items: center;
-  }
-
-  .card-topline {
     justify-content: space-between;
     gap: 1rem;
   }
 
   .platform,
-  .category,
   .difficulty,
-  time,
-  .tag-list {
+  .card-bottom {
     font-family: var(--font-mono);
     font-size: 0.7rem;
   }
@@ -100,18 +75,10 @@ const searchableText = [title, description, platform, category, difficulty, ...t
   .platform {
     color: var(--accent-strong);
     font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
   .difficulty {
-    display: inline-flex;
-    min-height: 1.65rem;
-    padding: 0.22rem 0.56rem;
-    align-items: center;
-    border: 1px solid currentColor;
-    border-radius: 999px;
-    font-weight: 700;
+    color: var(--ink-soft);
   }
 
   .difficulty-easy {
@@ -127,119 +94,42 @@ const searchableText = [title, description, platform, category, difficulty, ...t
     color: var(--accent);
   }
 
-  .difficulty-insane {
-    background: var(--accent);
-    color: var(--paper);
-  }
-
-  .card-copy {
-    margin-block: auto;
-    padding-block: 2.8rem;
-  }
-
-  .category {
-    margin: 0 0 0.65rem;
-    color: var(--ink-soft);
-    text-transform: uppercase;
-  }
-
-  h3 {
-    max-width: 14ch;
-    margin: 0;
+  h2 {
+    max-width: 24ch;
+    margin: 1.5rem 0 0;
     color: var(--ink);
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 2.4vw, 2.4rem);
-    line-height: 1.02;
+    font-size: clamp(1.4rem, 2.3vw, 1.9rem);
+    line-height: 1.2;
     letter-spacing: -0.025em;
     text-wrap: balance;
     transition: color 180ms ease;
   }
 
-  .card-link:hover h3 {
+  .card-link:hover h2 {
     color: var(--accent-strong);
   }
 
   .description {
     display: -webkit-box;
     max-width: 34rem;
-    margin: 1rem 0 0;
+    margin: 0.7rem 0 1.5rem;
     overflow: hidden;
     color: var(--ink-soft);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     line-height: 1.55;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
   }
 
   .card-bottom {
-    min-height: 3.2rem;
-    padding-top: 0.9rem;
-    border-top: 1px solid var(--line);
-    flex-wrap: wrap;
-    gap: 0.6rem 1rem;
-  }
-
-  time {
+    margin-top: auto;
     color: var(--ink-soft);
-  }
-
-  .tag-list {
-    display: flex;
-    margin: 0;
-    padding: 0;
-    flex: 1;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.65rem;
-    color: var(--ink-soft);
-    list-style: none;
-  }
-
-  .read-more {
-    color: var(--accent-strong);
-    font-size: 0.8rem;
-    font-weight: 700;
-  }
-
-  .read-more span {
-    display: inline-block;
-    margin-left: 0.2rem;
-    transition: transform 180ms ease;
-  }
-
-  .card-link:hover .read-more span {
-    transform: translateX(0.25rem);
-  }
-
-  .featured .card-link {
-    min-height: 27rem;
-    padding-inline: clamp(1.2rem, 3vw, 2.5rem);
-    border: 1px solid var(--line);
-    border-top: 3px solid var(--accent);
-    border-radius: var(--radius-md);
-    background: var(--surface);
-    box-shadow: 0 1.2rem 3.5rem rgb(93 33 49 / 8%);
-  }
-
-  .featured::before {
-    display: none;
-  }
-
-  .featured h3 {
-    max-width: 16ch;
-    font-size: clamp(2rem, 4vw, 3.5rem);
   }
 
   @media (max-width: 42rem) {
     .card-link {
-      min-height: 19rem;
-    }
-
-    .card-copy {
-      padding-block: 2rem;
-    }
-
-    .read-more {
-      width: 100%;
+      min-height: 0;
     }
   }
 </style>

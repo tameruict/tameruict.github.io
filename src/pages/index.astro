@@ -3,85 +3,36 @@ import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import WriteupCard from "../components/WriteupCard.astro";
 
-const allPosts = await getCollection("writeups", ({ data }) => !data.draft);
-const posts = allPosts.sort(
+const posts = (await getCollection("writeups", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
-const featuredPost = posts.find((post) => post.data.featured) ?? posts[0];
-const remainingPosts = featuredPost ? posts.filter((post) => post.id !== featuredPost.id) : [];
 const platforms = [...new Set(posts.map((post) => post.data.platform))].sort((a, b) =>
   a.localeCompare(b),
 );
-const platformCounts = new Map(
-  platforms.map((platform) => [
-    platform,
-    posts.filter((post) => post.data.platform === platform).length,
-  ]),
-);
 ---
 
-<BaseLayout
-  description="Write-up CTF từ Hack The Box, picoCTF và nhiều sân chơi khác, được phân loại theo nền tảng, chủ đề và độ khó."
->
-  <section class="hero shell" aria-labelledby="hero-title">
-    <div class="hero-copy">
-      <p class="eyebrow">CTF field notes</p>
-      <h1 id="hero-title">
-        Mổ xẻ challenge.<br />
-        <em>Giữ lại cách nghĩ.</em>
-      </h1>
-      <p class="hero-intro">
-        Write-up từ những lần mắc kẹt, thử sai và tìm ra lời giải. Tập trung vào tư duy khai thác,
-        kỹ thuật có thể dùng lại và những chi tiết dễ bị bỏ qua.
-      </p>
-    </div>
+<BaseLayout description="Write-up CTF được phân loại theo nền tảng, chủ đề và độ khó.">
+  <header class="page-header shell">
+    <h1>Write-ups</h1>
+  </header>
 
-    <aside class="hero-index" aria-label="Chỉ mục nền tảng">
-      <p>Nền tảng</p>
-      <ol>
-        {
-          platforms.map((platform, index) => (
-            <li>
-              <button type="button" data-platform-shortcut={platform}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{platform}</strong>
-                <small>{platformCounts.get(platform)} bài</small>
-              </button>
-            </li>
-          ))
-        }
-      </ol>
-    </aside>
-  </section>
-
-  <section class="archive shell" aria-labelledby="archive-title">
-    <header class="archive-heading">
-      <div>
-        <p class="eyebrow">Kho write-up</p>
-        <h2 id="archive-title">Chọn đúng thứ anh cần</h2>
-      </div>
-      <p class="archive-count">
-        <strong data-visible-count>{posts.length}</strong>
-        <span>/ {posts.length} bài đang hiển thị</span>
-      </p>
-    </header>
-
+  <section class="archive shell" aria-label="Danh sách write-up">
     <form class="filters" data-filter-form role="search">
       <div class="field search-field">
-        <label for="writeup-search">Tìm theo tên, tag hoặc kỹ thuật</label>
+        <label for="writeup-search">Tìm kiếm</label>
         <input
           id="writeup-search"
           name="query"
           type="search"
           autocomplete="off"
-          placeholder="Ví dụ: SQLi, heap, RSA..."
+          placeholder="Tên challenge, tag hoặc kỹ thuật"
         />
       </div>
 
       <div class="field">
         <label for="platform-filter">Nền tảng</label>
         <select id="platform-filter" name="platform">
-          <option value="">Tất cả nền tảng</option>
+          <option value="">Tất cả</option>
           {platforms.map((platform) => <option value={platform}>{platform}</option>)}
         </select>
       </div>
@@ -89,7 +40,7 @@ const platformCounts = new Map(
       <div class="field">
         <label for="difficulty-filter">Độ khó</label>
         <select id="difficulty-filter" name="difficulty">
-          <option value="">Mọi độ khó</option>
+          <option value="">Tất cả</option>
           <option value="Easy">Easy</option>
           <option value="Medium">Medium</option>
           <option value="Hard">Hard</option>
@@ -97,29 +48,31 @@ const platformCounts = new Map(
         </select>
       </div>
 
-      <button class="clear-button" type="reset">Xóa bộ lọc</button>
+      <button class="clear-button" type="reset">Đặt lại</button>
     </form>
+
+    <div class="result-count" aria-live="polite">
+      <strong data-visible-count>{posts.length}</strong>
+      <span>trên {posts.length} bài</span>
+    </div>
 
     {
       posts.length > 0 ? (
         <div class="writeup-list" data-writeup-list>
-          {featuredPost && <WriteupCard post={featuredPost} featured />}
-          {remainingPosts.map((post) => <WriteupCard post={post} />)}
+          {posts.map((post) => <WriteupCard post={post} />)}
         </div>
       ) : (
         <div class="empty-state static-empty">
-          <p class="eyebrow">Chưa có bài public</p>
-          <h3>Write-up đầu tiên đang được chuẩn bị.</h3>
-          <p>Quay lại sau nhé. Kho ghi chép sẽ sớm có bài mới.</p>
+          <h2>Chưa có bài viết</h2>
+          <p>Đổi một bài từ draft sang public để hiển thị tại đây.</p>
         </div>
       )
     }
 
     <div class="empty-state" data-filter-empty hidden aria-live="polite">
-      <p class="eyebrow">Không tìm thấy</p>
-      <h3>Chưa có write-up khớp bộ lọc này.</h3>
-      <p>Thử đổi từ khóa, nền tảng hoặc mức độ khó.</p>
-      <button type="button" data-empty-reset>Hiện tất cả bài</button>
+      <h2>Không có kết quả</h2>
+      <p>Hãy điều chỉnh từ khóa hoặc bộ lọc.</p>
+      <button type="button" data-empty-reset>Hiện tất cả</button>
     </div>
   </section>
 
@@ -165,15 +118,6 @@ const platformCounts = new Map(
     form?.addEventListener("input", applyFilters);
     form?.addEventListener("reset", () => window.setTimeout(applyFilters, 0));
 
-    document.querySelectorAll<HTMLButtonElement>("[data-platform-shortcut]").forEach((button) => {
-      button.addEventListener("click", () => {
-        if (!platformSelect) return;
-        platformSelect.value = button.dataset.platformShortcut ?? "";
-        applyFilters();
-        document.querySelector("#archive-title")?.scrollIntoView({ behavior: "smooth" });
-      });
-    });
-
     document.querySelector<HTMLButtonElement>("[data-empty-reset]")?.addEventListener("click", () => {
       form?.reset();
       window.setTimeout(() => {
@@ -185,150 +129,36 @@ const platformCounts = new Map(
 </BaseLayout>
 
 <style>
-  .hero {
-    display: grid;
-    min-height: clamp(36rem, 76vh, 48rem);
-    padding-block: clamp(5rem, 11vw, 9rem);
-    align-items: end;
-    grid-template-columns: minmax(0, 1.55fr) minmax(17rem, 0.65fr);
-    gap: clamp(3rem, 8vw, 8rem);
+  .page-header {
+    padding: 3.5rem 0 2rem;
+    border-bottom: 1px solid var(--line-strong);
   }
 
-  .hero-copy {
-    align-self: center;
-  }
-
-  h1 {
-    max-width: 12ch;
+  .page-header h1 {
     margin: 0;
     color: var(--ink);
     font-family: var(--font-display);
-    font-size: clamp(3.4rem, 8.2vw, 7.8rem);
-    font-weight: 700;
-    letter-spacing: -0.055em;
-    line-height: 0.88;
-    text-wrap: balance;
+    font-size: clamp(2.4rem, 4vw, 3.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
   }
 
-  h1 em {
-    color: var(--accent);
-    font-weight: 400;
-  }
-
-  .hero-intro {
-    max-width: 39rem;
-    margin: clamp(2rem, 4vw, 3.2rem) 0 0 clamp(2rem, 6vw, 7rem);
-    color: var(--ink-soft);
-    font-size: clamp(1rem, 0.9rem + 0.42vw, 1.25rem);
-    line-height: 1.6;
-  }
-
-  .hero-index {
-    padding-bottom: 0.25rem;
-  }
-
-  .hero-index > p {
-    margin: 0 0 0.8rem;
+  .result-count {
     color: var(--ink-soft);
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .hero-index ol {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .hero-index li {
-    border-top: 1px solid var(--line);
-  }
-
-  .hero-index li:last-child {
-    border-bottom: 1px solid var(--line);
-  }
-
-  .hero-index button {
-    display: grid;
-    width: 100%;
-    min-height: 3.8rem;
-    padding: 0.55rem 0;
-    align-items: center;
-    border: 0;
-    background: transparent;
-    grid-template-columns: 2.3rem 1fr auto;
-    gap: 0.7rem;
-    text-align: left;
-  }
-
-  .hero-index button span,
-  .hero-index button small {
-    color: var(--ink-soft);
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-  }
-
-  .hero-index button strong {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    transition: color 160ms ease, transform 160ms ease;
-  }
-
-  .hero-index button:hover strong {
-    color: var(--accent);
-    transform: translateX(0.2rem);
+    font-size: 0.75rem;
   }
 
   .archive {
-    padding-top: clamp(4rem, 8vw, 7rem);
-  }
-
-  .archive-heading {
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 2rem;
-  }
-
-  .archive-heading h2 {
-    max-width: 14ch;
-    margin: 0;
-    color: var(--ink);
-    font-family: var(--font-display);
-    font-size: clamp(2.6rem, 5.8vw, 5.8rem);
-    letter-spacing: -0.045em;
-    line-height: 0.95;
-    overflow-wrap: normal;
-    word-break: keep-all;
-  }
-
-  .archive-count {
-    display: flex;
-    margin: 0 0 0.4rem;
-    align-items: baseline;
-    gap: 0.5rem;
-    color: var(--ink-soft);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-  }
-
-  .archive-count strong {
-    color: var(--accent);
-    font-family: var(--font-display);
-    font-size: 2.2rem;
+    padding-block: 2rem clamp(4rem, 8vw, 7rem);
   }
 
   .filters {
     display: grid;
-    margin-block: clamp(2.5rem, 5vw, 4.5rem);
-    padding: 1.1rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    background: rgb(255 250 250 / 72%);
-    grid-template-columns: minmax(14rem, 1.6fr) minmax(10rem, 0.8fr) minmax(10rem, 0.7fr) auto;
-    gap: 0.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+    grid-template-columns: minmax(14rem, 1.8fr) minmax(10rem, 0.8fr) minmax(9rem, 0.7fr) auto;
+    gap: 0.85rem;
   }
 
   .field {
@@ -337,20 +167,17 @@ const platformCounts = new Map(
 
   .field label {
     display: block;
-    margin: 0 0 0.38rem 0.1rem;
+    margin-bottom: 0.35rem;
     color: var(--ink-soft);
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
   }
 
   .field input,
   .field select {
     width: 100%;
-    min-height: 3rem;
-    padding: 0.65rem 0.8rem;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.7rem;
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     background: var(--surface);
@@ -365,57 +192,50 @@ const platformCounts = new Map(
   }
 
   .field input::placeholder {
-    color: #987982;
+    color: var(--ink-soft);
   }
 
   .clear-button {
-    min-height: 3rem;
-    margin-top: 1.45rem;
-    padding: 0.6rem 1rem;
+    min-height: 2.75rem;
+    margin-top: 1.55rem;
+    padding: 0.5rem 0.9rem;
     border: 1px solid var(--line-strong);
     border-radius: var(--radius-sm);
     background: transparent;
-    color: var(--accent-strong);
-    font-size: 0.78rem;
-    font-weight: 700;
+    color: var(--ink);
+    font-size: 0.8rem;
+    font-weight: 600;
   }
 
   .clear-button:hover {
     border-color: var(--accent);
-    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .result-count {
+    display: flex;
+    margin-block: 1.25rem 0;
+    justify-content: flex-end;
+    gap: 0.35rem;
+  }
+
+  .result-count strong {
+    color: var(--ink);
   }
 
   .writeup-list {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: clamp(2.2rem, 4vw, 4rem) clamp(1.5rem, 3vw, 3rem);
-  }
-
-  .writeup-list :global(.writeup-card) {
-    grid-column: span 6;
-  }
-
-  .writeup-list :global(.writeup-card.featured) {
-    grid-column: 1 / -1;
-    width: min(100%, 58rem);
-    margin-left: auto;
-  }
-
-  .writeup-list :global(.writeup-card:nth-child(4n + 2)) {
-    grid-column: 2 / span 5;
-  }
-
-  .writeup-list :global(.writeup-card:nth-child(4n + 3)) {
-    grid-column: 7 / span 6;
+    margin-top: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(2rem, 5vw, 5rem);
   }
 
   .empty-state {
-    max-width: 46rem;
-    margin: 5rem auto;
-    padding: clamp(2rem, 5vw, 4rem);
+    max-width: 34rem;
+    margin: 4rem auto;
+    padding: 2.5rem;
     border: 1px solid var(--line);
     border-radius: var(--radius-md);
-    background: var(--surface);
     text-align: center;
   }
 
@@ -423,52 +243,31 @@ const platformCounts = new Map(
     display: none;
   }
 
-  .empty-state h3 {
+  .empty-state h2 {
     margin: 0;
-    color: var(--accent-strong);
     font-family: var(--font-display);
-    font-size: clamp(1.7rem, 4vw, 2.8rem);
+    font-size: 1.4rem;
   }
 
-  .empty-state > p:last-of-type {
-    margin: 0.8rem 0 0;
+  .empty-state p {
+    margin: 0.5rem 0 0;
     color: var(--ink-soft);
   }
 
   .empty-state button {
-    min-height: 2.8rem;
-    margin-top: 1.4rem;
-    padding: 0.55rem 1rem;
+    min-height: 2.6rem;
+    margin-top: 1.25rem;
+    padding: 0.5rem 0.85rem;
     border: 1px solid var(--accent);
     border-radius: var(--radius-sm);
-    background: var(--accent);
-    color: var(--paper);
-    font-weight: 700;
+    background: transparent;
+    color: var(--accent-strong);
+    font-weight: 600;
   }
 
   @media (max-width: 54rem) {
-    .hero {
-      min-height: auto;
-      padding-block: 2rem;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-
-    h1 {
-      font-size: clamp(3rem, 13vw, 4.8rem);
-    }
-
-    .hero-intro {
-      margin-left: 0;
-    }
-
-    .hero-index {
-      width: min(100%, 34rem);
-      margin-left: auto;
-    }
-
     .filters {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .search-field {
@@ -481,28 +280,12 @@ const platformCounts = new Map(
   }
 
   @media (max-width: 42rem) {
-    .hero {
-      padding-block: 4rem 5rem;
+    .page-header {
+      padding-top: 2.75rem;
     }
 
-    h1 {
-      font-size: clamp(3.15rem, 16vw, 5.5rem);
-    }
-
-    .archive-heading {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 1.3rem;
-    }
-
-    .archive-heading h2 {
-      max-width: 11ch;
-      font-size: clamp(2.55rem, 13vw, 4rem);
-      letter-spacing: -0.035em;
-    }
-
-    .filters {
-      padding: 0.8rem;
+    .filters,
+    .writeup-list {
       grid-template-columns: 1fr;
     }
 
@@ -510,17 +293,8 @@ const platformCounts = new Map(
       grid-column: auto;
     }
 
-    .writeup-list {
-      display: block;
-    }
-
-    .writeup-list :global(.writeup-card) {
-      margin-bottom: 3rem;
-    }
-
-    .writeup-list :global(.writeup-card.featured) {
+    .clear-button {
       width: 100%;
-      margin-bottom: 3.5rem;
     }
   }
 </style>

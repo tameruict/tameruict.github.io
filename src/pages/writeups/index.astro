@@ -16,14 +16,11 @@ const platformGroups = [...new Set(posts.map(({ data }) => data.platform))]
 
 <BaseLayout
   title="Tất cả write-up"
-  description="Kho write-up CTF được nhóm theo nền tảng và gắn mức độ khó rõ ràng."
+  description="Write-up CTF được nhóm theo nền tảng và mức độ khó."
 >
-  <header class="archive-hero shell">
-    <p class="eyebrow">Kho write-up</p>
-    <h1>Tìm theo sân chơi</h1>
-    <p>
-      Mỗi bài ghi lại command, hướng suy luận và phần kỹ thuật có thể dùng lại ở challenge khác.
-    </p>
+  <header class="archive-header shell">
+    <h1>Tất cả write-up</h1>
+    <p>{posts.length} bài viết</p>
   </header>
 
   <nav class="platform-nav shell" aria-label="Chọn nền tảng">
@@ -32,8 +29,8 @@ const platformGroups = [...new Set(posts.map(({ data }) => data.platform))]
         const anchor = platform.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
         return (
           <a href={`#${anchor}`}>
-            <span>{platform}</span>
-            <small>{platformPosts.length} bài</small>
+            {platform}
+            <span>{platformPosts.length}</span>
           </a>
         );
       })
@@ -48,7 +45,7 @@ const platformGroups = [...new Set(posts.map(({ data }) => data.platform))]
           <section class="platform-group" id={anchor} aria-labelledby={`${anchor}-title`}>
             <header>
               <h2 id={`${anchor}-title`}>{platform}</h2>
-              <p>{platformPosts.length} write-up</p>
+              <p>{platformPosts.length} bài</p>
             </header>
             <div class="writeup-grid">
               {platformPosts.map((post) => <WriteupCard post={post} />)}
@@ -61,78 +58,72 @@ const platformGroups = [...new Set(posts.map(({ data }) => data.platform))]
 </BaseLayout>
 
 <style>
-  .archive-hero {
-    padding-block: clamp(4rem, 10vw, 8rem);
+  .archive-header {
+    display: flex;
+    padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(2rem, 4vw, 3rem);
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+    border-bottom: 1px solid var(--line-strong);
   }
 
-  .archive-hero h1 {
-    max-width: 11ch;
+  .archive-header h1 {
     margin: 0;
-    color: var(--ink);
     font-family: var(--font-display);
-    font-size: clamp(3.4rem, 9vw, 7.5rem);
-    line-height: 0.92;
-    letter-spacing: -0.05em;
+    font-size: clamp(2.6rem, 6vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
   }
 
-  .archive-hero > p:last-child {
-    max-width: 38rem;
-    margin: 1.5rem 0 0;
+  .archive-header p {
+    margin: 0 0 0.35rem;
     color: var(--ink-soft);
-    line-height: 1.65;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
   }
 
   .platform-nav {
-    display: grid;
-    padding-bottom: clamp(3rem, 7vw, 6rem);
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1rem;
+    display: flex;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
   }
 
   .platform-nav a {
-    display: flex;
-    min-height: 6.5rem;
-    padding: 1rem;
-    justify-content: space-between;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    color: var(--ink);
-    background: var(--surface);
+    display: inline-flex;
+    gap: 0.45rem;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
     text-decoration: none;
-    transition:
-      border-color 180ms ease,
-      transform 180ms ease;
   }
 
   .platform-nav a:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
+    color: var(--accent-strong);
   }
 
   .platform-nav span {
-    align-self: flex-end;
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-  }
-
-  .platform-nav small {
-    color: var(--accent-strong);
+    color: var(--accent);
     font-family: var(--font-mono);
+    font-size: 0.7rem;
   }
 
   .platform-groups {
-    padding-bottom: clamp(5rem, 10vw, 10rem);
+    padding-bottom: clamp(4rem, 8vw, 7rem);
   }
 
   .platform-group {
-    padding-block: clamp(3rem, 7vw, 6rem);
-    border-top: 1px solid var(--line-strong);
+    padding-block: clamp(2.5rem, 5vw, 4rem);
     scroll-margin-top: 2rem;
+  }
+
+  .platform-group + .platform-group {
+    border-top: 1px solid var(--line-strong);
   }
 
   .platform-group > header {
     display: flex;
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.75rem;
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
@@ -141,30 +132,23 @@ const platformGroups = [...new Set(posts.map(({ data }) => data.platform))]
   .platform-group h2 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(2.2rem, 5vw, 4.5rem);
-    letter-spacing: -0.04em;
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    letter-spacing: -0.03em;
   }
 
   .platform-group header p {
     color: var(--ink-soft);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
   }
 
   .writeup-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(1.5rem, 5vw, 5rem);
-  }
-
-  @media (max-width: 52rem) {
-    .platform-nav {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+    column-gap: clamp(2rem, 5vw, 5rem);
   }
 
   @media (max-width: 42rem) {
-    .platform-nav,
     .writeup-grid {
       grid-template-columns: 1fr;
     }
