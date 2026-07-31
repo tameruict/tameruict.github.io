@@ -30,17 +30,18 @@ const slugify = (value) =>
 
 const platformSlug = slugify(platform);
 const titleSlug = slugify(title);
-const target = join(
+const targetDirectory = join(
   process.cwd(),
   "src",
   "content",
   "writeups",
   platformSlug,
-  `${titleSlug}.md`,
 );
+const targetVi = join(targetDirectory, `${titleSlug}.md`);
+const targetEn = join(targetDirectory, `${titleSlug}.en.md`);
 
-if (existsSync(target)) {
-  console.error(`File đã tồn tại: ${target}`);
+if (existsSync(targetVi) || existsSync(targetEn)) {
+  console.error(`Một bản dịch đã tồn tại: ${targetVi} hoặc ${targetEn}`);
   process.exit(1);
 }
 
@@ -51,17 +52,24 @@ const today = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 }).format(new Date());
 
-const lines = [
-  "---",
-  `title: ${JSON.stringify(title)}`,
-  'description: "Mô tả ngắn kết quả và kỹ thuật chính của challenge."',
+const sharedFrontmatter = [
   `platform: ${JSON.stringify(platform)}`,
   `category: ${JSON.stringify(category)}`,
   `difficulty: ${JSON.stringify(difficulty)}`,
   `publishedAt: ${today}`,
   'tags: ["tag-1", "tag-2"]',
+  `translationKey: ${JSON.stringify(`${platformSlug}/${titleSlug}`)}`,
   "draft: true",
   "featured: false",
+];
+
+const viLines = [
+  "---",
+  `title: ${JSON.stringify(title)}`,
+  'description: "Mô tả ngắn kết quả và kỹ thuật chính của challenge."',
+  ...sharedFrontmatter.slice(0, 5),
+  'language: "vi"',
+  ...sharedFrontmatter.slice(5),
   "---",
   "",
   "## Tóm tắt",
@@ -96,6 +104,48 @@ const lines = [
   "",
 ];
 
-mkdirSync(dirname(target), { recursive: true });
-writeFileSync(target, lines.join("\n"), "utf8");
-console.log(`Đã tạo: ${target}`);
+const enLines = [
+  "---",
+  `title: ${JSON.stringify(title)}`,
+  'description: "A concise summary of the challenge outcome and its main techniques."',
+  ...sharedFrontmatter.slice(0, 5),
+  'language: "en"',
+  ...sharedFrontmatter.slice(5),
+  "---",
+  "",
+  "## Summary",
+  "",
+  "Describe the objective, result, and primary techniques in English.",
+  "",
+  "## Reconnaissance",
+  "",
+  "```bash",
+  "# Important commands and output",
+  "```",
+  "",
+  "## Analysis",
+  "",
+  "Separate observations, hypotheses, and verification steps.",
+  "",
+  "## Exploitation",
+  "",
+  "```python",
+  "# solve.py",
+  "```",
+  "",
+  "## Flag",
+  "",
+  "Redact the flag if the competition rules do not allow publication.",
+  "",
+  "## Lessons learned",
+  "",
+  "- What worked well?",
+  "- Which approaches failed?",
+  "- How can defenders mitigate the issue?",
+  "",
+];
+
+mkdirSync(dirname(targetVi), { recursive: true });
+writeFileSync(targetVi, viLines.join("\n"), "utf8");
+writeFileSync(targetEn, enLines.join("\n"), "utf8");
+console.log(`Đã tạo cặp bản dịch:\n- ${targetVi}\n- ${targetEn}`);

@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+import ArticlePage from "../../writeups/[...id].astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("writeups", ({ data }) => !data.draft && data.language === "en");
+
+  return posts.map((post) => ({
+    params: { id: post.data.translationKey },
+    props: { post, posts },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<"writeups">;
+  posts: CollectionEntry<"writeups">[];
+}
+
+const { post, posts } = Astro.props;
+---
+
+<ArticlePage post={post} posts={posts} />

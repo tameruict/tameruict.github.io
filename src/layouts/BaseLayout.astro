@@ -1,6 +1,7 @@
 ---
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import { alternateLocalePath, localeFromPath, localizedPath, ui } from "../i18n";
 import "../styles/global.css";
 
 interface Props {
@@ -21,10 +22,13 @@ const pageTitle = title === "Tameru Write-ups" ? title : `${title} | Tameru Writ
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? Astro.url);
 const imageURL = image ? new URL(image, Astro.site ?? Astro.url) : undefined;
 const rssURL = new URL("/rss.xml", Astro.site ?? Astro.url);
+const locale = localeFromPath(Astro.url.pathname);
+const alternateURL = new URL(alternateLocalePath(Astro.url.pathname), Astro.site ?? Astro.url);
+const copy = ui[locale];
 ---
 
 <!doctype html>
-<html lang="vi">
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,10 +37,12 @@ const rssURL = new URL("/rss.xml", Astro.site ?? Astro.url);
     <meta name="theme-color" content="#0c1211" media="(prefers-color-scheme: dark)" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="alternate" hreflang={locale === "vi" ? "en" : "vi"} href={alternateURL} />
+    <link rel="alternate" hreflang="x-default" href={new URL(localizedPath(Astro.url.pathname, "vi"), Astro.site ?? Astro.url)} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title="Tameru Write-ups" href={rssURL} />
     <meta property="og:type" content={article ? "article" : "website"} />
-    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale" content={locale === "vi" ? "vi_VN" : "en_US"} />
     <meta property="og:site_name" content="Tameru Write-ups" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
@@ -49,7 +55,7 @@ const rssURL = new URL("/rss.xml", Astro.site ?? Astro.url);
     <title>{pageTitle}</title>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Đi đến nội dung</a>
+    <a class="skip-link" href="#main-content">{copy.skip}</a>
     <SiteHeader />
     <main id="main-content">
       <slot />

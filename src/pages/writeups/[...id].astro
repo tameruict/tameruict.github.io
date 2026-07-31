@@ -2,13 +2,14 @@
 import type { CollectionEntry } from "astro:content";
 import { getCollection, render } from "astro:content";
 import WriteupCard from "../../components/WriteupCard.astro";
+import { localizedPath, localeFromPath } from "../../i18n";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("writeups", ({ data }) => !data.draft);
+  const posts = await getCollection("writeups", ({ data }) => !data.draft && data.language === "vi");
 
   return posts.map((post) => ({
-    params: { id: post.id },
+    params: { id: post.data.translationKey },
     props: { post, posts },
   }));
 }
@@ -19,15 +20,27 @@ interface Props {
 }
 
 const { post, posts } = Astro.props;
+const locale = localeFromPath(Astro.url.pathname);
+const copy = locale === "vi"
+  ? {
+      breadcrumb: "Đường dẫn", home: "Trang chủ", published: "Đăng", updated: "Cập nhật",
+      tags: "Thẻ bài viết", toc: "Trong bài này", related: "Đọc tiếp",
+      relatedHelp: "Các bài có cùng nền tảng hoặc kỹ thuật liên quan.",
+    }
+  : {
+      breadcrumb: "Breadcrumb", home: "Home", published: "Published", updated: "Updated",
+      tags: "Article tags", toc: "In this article", related: "Read next",
+      relatedHelp: "Write-ups covering the same platform or related techniques.",
+    };
 const { Content, headings } = await render(post);
 const { title, description, platform, category, difficulty, publishedAt, updatedAt, tags, cover } =
   post.data;
-const formattedDate = publishedAt.toLocaleDateString("vi-VN", {
+const formattedDate = publishedAt.toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
   day: "2-digit",
   month: "long",
   year: "numeric",
 });
-const formattedUpdatedDate = updatedAt?.toLocaleDateString("vi-VN", {
+const formattedUpdatedDate = updatedAt?.toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
   day: "2-digit",
   month: "long",
   year: "numeric",
@@ -49,10 +62,10 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 
 <BaseLayout title={title} description={description} image={cover} article>
   <article class="article-shell shell">
-    <nav class="breadcrumb" aria-label="Đường dẫn">
-      <a href="/">Trang chủ</a>
+    <nav class="breadcrumb" aria-label={copy.breadcrumb}>
+      <a href={localizedPath("/", locale)}>{copy.home}</a>
       <span aria-hidden="true">/</span>
-      <a href="/writeups/">Write-ups</a>
+      <a href={localizedPath("/writeups/", locale)}>Write-ups</a>
       <span aria-hidden="true">/</span>
       <span aria-current="page">{title}</span>
     </nav>
@@ -72,13 +85,13 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
       <div class="header-details">
         <dl class="article-meta">
           <div>
-            <dt>Đăng</dt>
+            <dt>{copy.published}</dt>
             <dd><time datetime={publishedAt.toISOString()}>{formattedDate}</time></dd>
           </div>
           {
             formattedUpdatedDate && (
               <div>
-                <dt>Cập nhật</dt>
+                <dt>{copy.updated}</dt>
                 <dd>
                   <time datetime={updatedAt?.toISOString()}>{formattedUpdatedDate}</time>
                 </dd>
@@ -88,7 +101,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
         </dl>
 
         {tags.length > 0 && (
-          <ul class="article-tags" aria-label="Thẻ bài viết">
+          <ul class="article-tags" aria-label={copy.tags}>
             {tags.map((tag) => <li>#{tag}</li>)}
           </ul>
         )}
@@ -104,7 +117,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
         tocHeadings.length > 0 && (
           <aside class="toc">
             <nav aria-labelledby="toc-title">
-              <p id="toc-title">Trong bài này</p>
+              <p id="toc-title">{copy.toc}</p>
               <ol>
                 {tocHeadings.map((heading) => (
                   <li class:list={{ nested: heading.depth === 3 }}>
@@ -123,12 +136,12 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     relatedPosts.length > 0 && (
       <section class="related shell" aria-labelledby="related-title">
         <header>
-          <h2 id="related-title">Đọc tiếp</h2>
-          <p>Các bài có cùng nền tảng hoặc kỹ thuật liên quan.</p>
+          <h2 id="related-title">{copy.related}</h2>
+          <p>{copy.relatedHelp}</p>
         </header>
         <div class="related-list">
           {relatedPosts.map((relatedPost) => (
-            <WriteupCard post={relatedPost} titleAs="h3" />
+            <WriteupCard post={relatedPost} titleAs="h3" locale={locale} />
           ))}
         </div>
       </section>

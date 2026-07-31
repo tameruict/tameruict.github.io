@@ -1,9 +1,28 @@
 ---
 import { getCollection } from "astro:content";
 import WriteupCard from "../../components/WriteupCard.astro";
+import { localeFromPath } from "../../i18n";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
-const posts = (await getCollection("writeups", ({ data }) => !data.draft)).sort(
+const locale = localeFromPath(Astro.url.pathname);
+const copy = locale === "vi"
+  ? {
+      description: "Write-up CTF của Tameru.", count: "bài viết", list: "Danh sách write-up",
+      search: "Tìm kiếm", placeholder: "Challenge, tag hoặc kỹ thuật", platform: "Nền tảng",
+      allPlatforms: "Tất cả nền tảng", category: "Chủ đề", allCategories: "Tất cả chủ đề",
+      difficulty: "Độ khó", allDifficulties: "Tất cả độ khó", reset: "Đặt lại",
+      results: "Kết quả", noWriteups: "Chưa có write-up", noResults: "Không có kết quả",
+      noResultsHelp: "Thử một từ khóa khác hoặc bỏ bớt bộ lọc.", showAll: "Hiện tất cả",
+    }
+  : {
+      description: "CTF write-ups by Tameru.", count: "articles", list: "Write-up list",
+      search: "Search", placeholder: "Challenge, tag, or technique", platform: "Platform",
+      allPlatforms: "All platforms", category: "Category", allCategories: "All categories",
+      difficulty: "Difficulty", allDifficulties: "All difficulties", reset: "Reset",
+      results: "Results", noWriteups: "No write-ups yet", noResults: "No results",
+      noResultsHelp: "Try another keyword or remove some filters.", showAll: "Show all",
+    };
+const posts = (await getCollection("writeups", ({ data }) => !data.draft && data.language === locale)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
 const platforms = [...new Set(posts.map(({ data }) => data.platform))].sort((a, b) =>
@@ -16,50 +35,50 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
 
 <BaseLayout
   title="Write-ups"
-  description="Write-up CTF của Tameru."
+  description={copy.description}
 >
   <header class="archive-header shell">
     <div>
       <h1>Write-ups</h1>
-      <p>{posts.length} bài viết</p>
+      <p>{posts.length} {copy.count}</p>
     </div>
   </header>
 
   <section class="archive shell" aria-labelledby="archive-results-title">
-    <h2 class="visually-hidden" id="archive-results-title">Danh sách write-up</h2>
+    <h2 class="visually-hidden" id="archive-results-title">{copy.list}</h2>
 
     <form class="filters" data-filter-form role="search">
       <div class="field search-field">
-        <label for="writeup-search">Tìm kiếm</label>
+        <label for="writeup-search">{copy.search}</label>
         <input
           id="writeup-search"
           name="query"
           type="search"
           autocomplete="off"
-          placeholder="Challenge, tag hoặc kỹ thuật"
+          placeholder={copy.placeholder}
         />
       </div>
 
       <div class="field">
-        <label for="platform-filter">Nền tảng</label>
+        <label for="platform-filter">{copy.platform}</label>
         <select id="platform-filter" name="platform">
-          <option value="">Tất cả nền tảng</option>
+          <option value="">{copy.allPlatforms}</option>
           {platforms.map((platform) => <option value={platform}>{platform}</option>)}
         </select>
       </div>
 
       <div class="field">
-        <label for="category-filter">Chủ đề</label>
+        <label for="category-filter">{copy.category}</label>
         <select id="category-filter" name="category">
-          <option value="">Tất cả chủ đề</option>
+          <option value="">{copy.allCategories}</option>
           {categories.map((category) => <option value={category}>{category}</option>)}
         </select>
       </div>
 
       <div class="field">
-        <label for="difficulty-filter">Độ khó</label>
+        <label for="difficulty-filter">{copy.difficulty}</label>
         <select id="difficulty-filter" name="difficulty">
-          <option value="">Tất cả độ khó</option>
+          <option value="">{copy.allDifficulties}</option>
           <option value="Easy">Easy</option>
           <option value="Medium">Medium</option>
           <option value="Hard">Hard</option>
@@ -67,30 +86,30 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
         </select>
       </div>
 
-      <button class="clear-button" type="reset">Đặt lại</button>
+      <button class="clear-button" type="reset">{copy.reset}</button>
     </form>
 
     <div class="result-summary" aria-live="polite">
-      <span>Kết quả</span>
+      <span>{copy.results}</span>
       <strong><span data-visible-count>{posts.length}</span> / {posts.length}</strong>
     </div>
 
     {
       posts.length > 0 ? (
         <div class="writeup-list" data-writeup-list>
-          {posts.map((post) => <WriteupCard post={post} />)}
+          {posts.map((post) => <WriteupCard post={post} locale={locale} />)}
         </div>
       ) : (
         <div class="empty-state static-empty">
-          <h3>Chưa có write-up</h3>
+          <h3>{copy.noWriteups}</h3>
         </div>
       )
     }
 
     <div class="empty-state" data-filter-empty hidden aria-live="polite">
-      <h3>Không có kết quả</h3>
-      <p>Thử một từ khóa khác hoặc bỏ bớt bộ lọc.</p>
-      <button type="button" data-empty-reset>Hiện tất cả</button>
+      <h3>{copy.noResults}</h3>
+      <p>{copy.noResultsHelp}</p>
+      <button type="button" data-empty-reset>{copy.showAll}</button>
     </div>
   </section>
 
@@ -108,7 +127,7 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
       value
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .toLocaleLowerCase("vi")
+        .toLocaleLowerCase(document.documentElement.lang)
         .trim();
 
     const setInitialFilters = () => {

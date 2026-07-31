@@ -6,6 +6,8 @@ category: "Linux"
 difficulty: "Easy"
 publishedAt: 2026-07-29
 tags: ["idor", "wireshark", "ftp", "linux", "capabilities", "privesc"]
+language: "vi"
+translationKey: "hack-the-box/cap"
 draft: false
 featured: true
 cover: "/images/cap/cap-02.png"

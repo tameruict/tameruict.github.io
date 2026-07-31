@@ -1,22 +1,25 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import type { Locale } from "../i18n";
+import { writeupPath } from "../i18n";
 
 interface Props {
   post: CollectionEntry<"writeups">;
   featured?: boolean;
   titleAs?: "h2" | "h3";
+  locale?: Locale;
 }
 
-const { post, featured = false, titleAs = "h2" } = Astro.props;
+const { post, featured = false, titleAs = "h2", locale = post.data.language } = Astro.props;
 const { title, description, platform, category, difficulty, publishedAt, tags } = post.data;
-const formattedDate = publishedAt.toLocaleDateString("vi-VN", {
+const formattedDate = publishedAt.toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US", {
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
 });
 const searchableText = [title, description, platform, category, difficulty, ...tags]
   .join(" ")
-  .toLocaleLowerCase("vi");
+  .toLocaleLowerCase(locale);
 ---
 
 <article
@@ -27,7 +30,7 @@ const searchableText = [title, description, platform, category, difficulty, ...t
   data-difficulty={difficulty}
   data-search={searchableText}
 >
-  <a class="card-link" href={`/writeups/${post.id}/`} aria-label={`Đọc write-up ${title}`}>
+  <a class="card-link" href={writeupPath(post.data.translationKey, locale)} aria-label={`${locale === "vi" ? "Đọc" : "Read"} write-up ${title}`}>
     <div class="card-main">
       <div class="card-topline">
         <span class="platform">{platform}</span>

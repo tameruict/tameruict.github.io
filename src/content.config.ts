@@ -16,6 +16,8 @@ const writeups = defineCollection({
     publishedAt: z.coerce.date(),
     updatedAt: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
+    language: z.enum(["vi", "en"]),
+    translationKey: z.string(),
     draft: z.boolean().default(false),
     featured: z.boolean().optional(),
     cover: z.string().optional(),

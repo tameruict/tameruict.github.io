@@ -6,6 +6,8 @@ category: "Web"
 difficulty: "Easy"
 publishedAt: 2026-07-31
 tags: ["web", "authentication-bypass", "json", "go", "python", "parser-differential"]
+language: "vi"
+translationKey: "hack-the-box/space-explorer"
 draft: false
 featured: true
 cover: "/images/space-explorer/space-explorer-04.png"

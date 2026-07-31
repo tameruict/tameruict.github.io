@@ -6,6 +6,8 @@ category: "Linux"
 difficulty: "Easy"
 publishedAt: 2026-07-30
 tags: ["api", "invite-code", "command-injection", "reverse-shell", "linux", "privesc"]
+language: "vi"
+translationKey: "hack-the-box/twomillion"
 draft: false
 featured: true
 cover: "/images/twomillion/two-million-02.png"

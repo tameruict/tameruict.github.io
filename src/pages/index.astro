@@ -1,31 +1,48 @@
 ---
 import { getCollection } from "astro:content";
 import WriteupCard from "../components/WriteupCard.astro";
+import { localizedPath, localeFromPath } from "../i18n";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-const posts = (await getCollection("writeups", ({ data }) => !data.draft)).sort(
+const locale = localeFromPath(Astro.url.pathname);
+const copy = locale === "vi"
+  ? {
+      description: "Write-up CTF của Tameru.",
+      count: "bài viết",
+      filter: "Tìm kiếm và lọc",
+      list: "Danh sách write-up",
+      empty: "Chưa có write-up.",
+    }
+  : {
+      description: "CTF write-ups by Tameru.",
+      count: "articles",
+      filter: "Search and filter",
+      list: "Write-up list",
+      empty: "No write-ups yet.",
+    };
+const posts = (await getCollection("writeups", ({ data }) => !data.draft && data.language === locale)).sort(
   (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
 );
 ---
 
-<BaseLayout description="Write-up CTF của Tameru.">
+<BaseLayout description={copy.description}>
   <header class="page-header shell">
     <div>
       <h1>Write-ups</h1>
-      <p>{posts.length} bài viết</p>
+      <p>{posts.length} {copy.count}</p>
     </div>
-    <a href="/writeups/">Tìm kiếm và lọc</a>
+    <a href={localizedPath("/writeups/", locale)}>{copy.filter}</a>
   </header>
 
   <section class="writeup-index shell" aria-labelledby="writeup-list-title">
-    <h2 class="visually-hidden" id="writeup-list-title">Danh sách write-up</h2>
+    <h2 class="visually-hidden" id="writeup-list-title">{copy.list}</h2>
     {
       posts.length > 0 ? (
         <div class="writeup-list">
-          {posts.map((post) => <WriteupCard post={post} />)}
+          {posts.map((post) => <WriteupCard post={post} locale={locale} />)}
         </div>
       ) : (
-        <p class="empty-state">Chưa có write-up.</p>
+        <p class="empty-state">{copy.empty}</p>
       )
     }
   </section>

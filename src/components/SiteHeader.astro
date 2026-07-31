@@ -1,19 +1,34 @@
 ---
+import { alternateLocalePath, localizedPath, localeFromPath, ui } from "../i18n";
+
 const pathname = Astro.url.pathname;
-const isHome = pathname === "/";
-const isWriteups = pathname.startsWith("/writeups");
+const locale = localeFromPath(pathname);
+const copy = ui[locale];
+const homePath = localizedPath("/", locale);
+const writeupsPath = localizedPath("/writeups/", locale);
+const alternatePath = alternateLocalePath(pathname);
+const isHome = pathname === homePath;
+const isWriteups = pathname === writeupsPath || pathname.startsWith(`${writeupsPath}`);
 ---
 
 <header class="site-header">
   <div class="header-shell">
-    <a class="wordmark" href="/" aria-label="Tameru Write-ups, trang chủ">
+    <a class="wordmark" href={homePath} aria-label={copy.homeLabel}>
       <strong>Tameru</strong>
     </a>
 
-    <nav aria-label="Điều hướng chính">
-      <a href="/" aria-current={isHome ? "page" : undefined}>Trang chủ</a>
-      <a href="/writeups/" aria-current={isWriteups ? "page" : undefined}>Write-ups</a>
-    </nav>
+    <div class="header-actions">
+      <nav aria-label={copy.navLabel}>
+        <a href={homePath} aria-current={isHome ? "page" : undefined}>{copy.home}</a>
+        <a href={writeupsPath} aria-current={isWriteups ? "page" : undefined}>Write-ups</a>
+      </nav>
+
+      <a class="language-switch" href={alternatePath} hreflang={locale === "vi" ? "en" : "vi"} aria-label={copy.switchLabel}>
+        <span class:list={{ active: locale === "vi" }}>VI</span>
+        <span aria-hidden="true">/</span>
+        <span class:list={{ active: locale === "en" }}>EN</span>
+      </a>
+    </div>
   </div>
 </header>
 
@@ -58,6 +73,35 @@ const isWriteups = pathname.startsWith("/writeups");
     gap: 0.25rem;
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .language-switch {
+    display: inline-flex;
+    min-height: 2.75rem;
+    padding-inline: 0.7rem;
+    align-items: center;
+    gap: 0.3rem;
+    border-left: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+  }
+
+  .language-switch:hover {
+    color: var(--accent-strong);
+  }
+
+  .language-switch .active {
+    color: var(--ink);
+  }
+
   nav a {
     display: inline-flex;
     min-height: 2.75rem;
@@ -94,6 +138,19 @@ const isWriteups = pathname.startsWith("/writeups");
     nav a {
       padding-inline: 0.55rem;
       font-size: 0.75rem;
+    }
+
+    .header-actions {
+      gap: 0.15rem;
+    }
+
+    .language-switch {
+      padding-inline: 0.45rem;
+      font-size: 0.62rem;
+    }
+
+    nav a:first-child {
+      display: none;
     }
   }
 

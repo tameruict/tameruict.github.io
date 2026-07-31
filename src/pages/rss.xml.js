@@ -10,13 +10,13 @@ const escapeXml = (value) =>
 
 export async function GET({ site }) {
   const base = site ?? new URL("https://tameruict.github.io");
-  const posts = (await getCollection("writeups", ({ data }) => !data.draft)).sort(
+  const posts = (await getCollection("writeups", ({ data }) => !data.draft && data.language === "vi")).sort(
     (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
   );
 
   const items = posts
-    .map(({ id, data }) => {
-      const url = new URL(`/writeups/${id}/`, base).href;
+    .map(({ data }) => {
+      const url = new URL(`/writeups/${data.translationKey}/`, base).href;
 
       return [
         "    <item>",
