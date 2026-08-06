@@ -55,7 +55,7 @@ const posts = (await getCollection("writeups", ({ data }) => !data.draft && data
     align-items: end;
     justify-content: space-between;
     gap: 2rem;
-    border-bottom: 1px solid var(--line-strong);
+    border-bottom: 1px solid rgba(217, 70, 239, 0.25);
   }
 
   .page-header h1 {
@@ -78,9 +78,22 @@ const posts = (await getCollection("writeups", ({ data }) => !data.draft && data
     display: inline-flex;
     min-height: 2.75rem;
     align-items: center;
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(217, 70, 239, 0.3);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
     color: var(--accent-strong);
     font-size: 0.84rem;
     font-weight: 700;
+    text-decoration: none;
+    transition: all 200ms ease;
+  }
+
+  .page-header a:hover {
+    background: rgba(217, 70, 239, 0.15);
+    box-shadow: 0 4px 16px rgba(217, 70, 239, 0.25);
+    transform: translateY(-1px);
   }
 
   .writeup-index {

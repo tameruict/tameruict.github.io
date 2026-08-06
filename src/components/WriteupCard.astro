@@ -60,11 +60,11 @@ const searchableText = [title, description, platform, category, difficulty, ...t
 <style>
   .writeup-card {
     min-width: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid rgba(217, 70, 239, 0.15);
   }
 
   .writeup-card:first-child {
-    border-top: 1px solid var(--line);
+    border-top: 1px solid rgba(217, 70, 239, 0.15);
   }
 
   .writeup-card.featured {
@@ -88,10 +88,13 @@ const searchableText = [title, description, platform, category, difficulty, ...t
   .featured .card-link {
     min-height: 14rem;
     padding: clamp(1.5rem, 4vw, 2.5rem);
-    border: 1px solid var(--line);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    background: var(--surface);
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: var(--glass-shadow);
     grid-template-columns: minmax(0, 1fr) 12rem;
+    transition: all 280ms ease;
   }
 
   .card-main {
@@ -173,12 +176,16 @@ const searchableText = [title, description, platform, category, difficulty, ...t
   }
 
   .card-link:hover {
-    background: color-mix(in srgb, var(--surface) 62%, transparent);
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
   }
 
   .featured .card-link:hover {
-    border-color: var(--line-strong);
-    background: var(--surface);
+    border-color: rgba(217, 70, 239, 0.4);
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(20px) saturate(200%);
+    box-shadow: 0 12px 40px 0 rgba(217, 70, 239, 0.25);
+    transform: translateY(-2px);
   }
 
   @media (max-width: 42rem) {

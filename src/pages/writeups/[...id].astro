@@ -184,7 +184,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
   .article-header {
     max-width: 72rem;
     padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
-    border-bottom: 1px solid var(--line-strong);
+    border-bottom: 1px solid rgba(217, 70, 239, 0.25);
   }
 
   .article-kicker {
@@ -291,8 +291,13 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
     position: sticky;
     top: 6rem;
     width: 100%;
-    padding-top: 1rem;
+    padding: 1.2rem;
+    border: 1px solid var(--glass-border);
     border-top: 2px solid var(--accent);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: var(--glass-shadow);
   }
 
   .toc p {
@@ -332,7 +337,7 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
 
   .related {
     padding-block: clamp(3.5rem, 7vw, 5.5rem);
-    border-top: 1px solid var(--line-strong);
+    border-top: 1px solid rgba(217, 70, 239, 0.25);
   }
 
   .related header {
@@ -368,11 +373,13 @@ const tocHeadings = headings.filter(({ depth }) => depth === 2 || depth === 3);
       position: static;
       grid-row: 1;
       max-width: 52rem;
-      padding: 1rem;
-      border: 1px solid var(--line);
+      padding: 1.2rem;
+      border: 1px solid var(--glass-border);
       border-top: 2px solid var(--accent);
-      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-      background: var(--surface);
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px) saturate(180%);
+      box-shadow: var(--glass-shadow);
     }
 
     .toc ol {

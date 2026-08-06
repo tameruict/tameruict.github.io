@@ -195,7 +195,7 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
 <style>
   .archive-header {
     padding-block: clamp(3.5rem, 8vw, 6rem) clamp(2rem, 4vw, 3rem);
-    border-bottom: 1px solid var(--line-strong);
+    border-bottom: 1px solid rgba(217, 70, 239, 0.25);
   }
 
   .archive-header > div {
@@ -228,9 +228,11 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
   .filters {
     display: grid;
     padding: 1.25rem;
-    border: 1px solid var(--line);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    background: var(--surface);
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: var(--glass-shadow);
     grid-template-columns: minmax(15rem, 1.6fr) repeat(3, minmax(9rem, 0.75fr)) auto;
     gap: 0.85rem;
   }
@@ -253,16 +255,19 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
     width: 100%;
     min-height: 2.75rem;
     padding: 0.55rem 0.7rem;
-    border: 1px solid var(--line-strong);
+    border: 1px solid rgba(217, 70, 239, 0.25);
     border-radius: var(--radius-sm);
-    background: var(--paper);
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(8px);
     font-size: 0.84rem;
+    transition: all 200ms ease;
   }
 
   .field input:focus,
   .field select:focus {
     border-color: var(--accent);
-    box-shadow: var(--shadow-focus);
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.25), 0 4px 16px rgba(217, 70, 239, 0.2);
     outline: none;
   }
 
@@ -275,17 +280,21 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
     min-height: 2.75rem;
     margin-top: 1.35rem;
     padding: 0.5rem 0.85rem;
-    border: 1px solid var(--line-strong);
+    border: 1px solid rgba(217, 70, 239, 0.3);
     border-radius: var(--radius-sm);
-    background: transparent;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
     color: var(--ink);
     font-size: 0.8rem;
     font-weight: 700;
+    transition: all 200ms ease;
   }
 
   .clear-button:hover {
     border-color: var(--accent);
+    background: rgba(217, 70, 239, 0.15);
     color: var(--accent-strong);
+    box-shadow: 0 4px 12px rgba(217, 70, 239, 0.2);
   }
 
   .result-summary {
@@ -312,9 +321,11 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
     max-width: 32rem;
     margin: 4rem auto;
     padding: 2.5rem;
-    border: 1px solid var(--line);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    background: var(--surface);
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: var(--glass-shadow);
     text-align: center;
   }
 
@@ -339,9 +350,17 @@ const categories = [...new Set(posts.map(({ data }) => data.category))].sort((a,
     padding: 0.5rem 0.9rem;
     border: 1px solid var(--accent);
     border-radius: var(--radius-sm);
-    background: transparent;
+    background: rgba(217, 70, 239, 0.1);
+    backdrop-filter: blur(8px);
     color: var(--accent-strong);
     font-weight: 700;
+    transition: all 200ms ease;
+  }
+
+  .empty-state button:hover {
+    background: rgba(217, 70, 239, 0.2);
+    box-shadow: 0 4px 16px rgba(217, 70, 239, 0.25);
+    transform: translateY(-1px);
   }
 
   @media (max-width: 64rem) {

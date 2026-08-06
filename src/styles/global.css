@@ -1,20 +1,28 @@
 :root {
   color-scheme: light;
-  --paper: #f4f6f5;
-  --paper-strong: #e9eeec;
-  --surface: #ffffff;
-  --surface-muted: #edf2f0;
-  --ink: #18201e;
-  --ink-soft: #5d6865;
-  --line: #d6dedb;
-  --line-strong: #b7c4c0;
-  --accent: #0f766e;
-  --accent-strong: #0a5d57;
-  --accent-soft: #d8eeeb;
-  --code-bg: #101816;
-  --code-ink: #e9f2ef;
-  --header-surface: rgb(244 246 245 / 94%);
-  --shadow-focus: 0 0 0 3px rgb(15 118 110 / 18%);
+  /* Pink gradient background colors */
+  --paper: #ffeef5;
+  --paper-strong: #ffd6e8;
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-muted: rgba(255, 240, 250, 0.5);
+  --ink: #1f0f18;
+  --ink-soft: #5a3548;
+  --line: rgba(255, 192, 218, 0.3);
+  --line-strong: rgba(255, 150, 200, 0.5);
+  --accent: #d946ef;
+  --accent-strong: #c026d3;
+  --accent-soft: rgba(217, 70, 239, 0.1);
+  --code-bg: #1a0e15;
+  --code-ink: #ffe4f0;
+  --header-surface: rgba(255, 238, 245, 0.75);
+  --shadow-focus: 0 0 0 3px rgba(217, 70, 239, 0.25);
+
+  /* Glassmorphism effects */
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-shadow: 0 8px 32px 0 rgba(217, 70, 239, 0.15);
+  --glass-blur: blur(12px);
+
   --font-display:
     "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI", ui-sans-serif, system-ui,
     -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
@@ -45,12 +53,14 @@ body {
   min-height: 100dvh;
   margin: 0;
   grid-template-rows: auto 1fr auto;
-  background: var(--paper);
+  background: linear-gradient(135deg, #ffeef5 0%, #ffd6e8 25%, #ffb3d9 50%, #ffc8e8 75%, #ffeef5 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.65;
   text-rendering: optimizeLegibility;
+  position: relative;
 }
 
 main {
@@ -60,6 +70,21 @@ main {
 ::selection {
   background: var(--accent);
   color: #ffffff;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(217, 70, 239, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 90%, rgba(192, 38, 211, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 a {
@@ -223,8 +248,11 @@ button {
 
 .prose blockquote {
   margin-inline: 0;
-  padding: 0.8rem 0 0.8rem 1.15rem;
+  padding: 1rem 1.25rem;
   border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
   color: var(--ink-soft);
 }
 
@@ -235,9 +263,10 @@ button {
 
 .prose :not(pre) > code {
   padding: 0.13em 0.34em;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(217, 70, 239, 0.25);
   border-radius: 0.25rem;
-  background: var(--surface-muted);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
   color: var(--accent-strong);
   font-family: var(--font-mono);
   font-size: 0.88em;
@@ -248,9 +277,10 @@ button {
   margin-block: 1.5rem;
   padding: 1rem 1.1rem;
   overflow-x: auto;
-  border: 1px solid #26332f;
+  border: 1px solid rgba(217, 70, 239, 0.2);
   border-radius: var(--radius-md);
   background: var(--code-bg) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   scrollbar-color: #536660 var(--code-bg);
 }
 
@@ -278,7 +308,7 @@ button {
 .prose td {
   min-width: 8rem;
   padding: 0.7rem 0.8rem;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgba(217, 70, 239, 0.2);
   text-align: left;
   vertical-align: top;
 }
@@ -294,15 +324,17 @@ button {
   width: auto;
   height: auto;
   margin-block: 1.75rem;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(217, 70, 239, 0.2);
   border-radius: var(--radius-md);
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(217, 70, 239, 0.15);
 }
 
 .prose hr {
   margin-block: 3rem;
   border: 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(217, 70, 239, 0.25);
 }
 
 @media (max-width: 42rem) {
@@ -335,25 +367,42 @@ button {
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --paper: #0c1211;
-    --paper-strong: #18211f;
-    --surface: #111a18;
-    --surface-muted: #172320;
-    --ink: #ecf4f1;
-    --ink-soft: #a5b4af;
-    --line: #26332f;
-    --line-strong: #3b4b46;
-    --accent: #5eead4;
-    --accent-strong: #7ff1df;
-    --accent-soft: #173b36;
-    --code-bg: #080d0c;
-    --code-ink: #e9f2ef;
-    --header-surface: rgb(12 18 17 / 94%);
-    --shadow-focus: 0 0 0 3px rgb(94 234 212 / 22%);
+    --paper: #1a0e15;
+    --paper-strong: #2d1524;
+    --surface: rgba(40, 20, 35, 0.7);
+    --surface-muted: rgba(45, 25, 40, 0.5);
+    --ink: #ffe4f0;
+    --ink-soft: #d4a5c0;
+    --line: rgba(217, 70, 239, 0.2);
+    --line-strong: rgba(236, 72, 153, 0.3);
+    --accent: #d946ef;
+    --accent-strong: #f0abfc;
+    --accent-soft: rgba(217, 70, 239, 0.15);
+    --code-bg: #0f0810;
+    --code-ink: #ffe4f0;
+    --header-surface: rgba(26, 14, 21, 0.75);
+    --shadow-focus: 0 0 0 3px rgba(217, 70, 239, 0.35);
+
+    /* Dark glassmorphism */
+    --glass-bg: rgba(40, 20, 35, 0.25);
+    --glass-border: rgba(217, 70, 239, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(217, 70, 239, 0.25);
+  }
+
+  body {
+    background: linear-gradient(135deg, #1a0e15 0%, #2d1524 25%, #3a1f2e 50%, #2d1524 75%, #1a0e15 100%);
+    background-attachment: fixed;
+  }
+
+  body::before {
+    background:
+      radial-gradient(circle at 20% 50%, rgba(217, 70, 239, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.2) 0%, transparent 50%),
+      radial-gradient(circle at 40% 90%, rgba(192, 38, 211, 0.15) 0%, transparent 50%);
   }
 
   ::selection {
-    color: #0c1211;
+    color: #1a0e15;
   }
 
   .prose img {

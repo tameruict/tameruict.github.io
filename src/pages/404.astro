@@ -64,14 +64,33 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   .actions a {
     display: inline-flex;
     min-height: 2.75rem;
+    padding: 0.6rem 1rem;
     align-items: center;
+    border: 1px solid rgba(217, 70, 239, 0.3);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
     color: var(--accent-strong);
     font-weight: 700;
+    text-decoration: none;
+    transition: all 200ms ease;
+  }
+
+  .actions a:hover {
+    background: rgba(217, 70, 239, 0.2);
+    box-shadow: 0 4px 16px rgba(217, 70, 239, 0.25);
+    transform: translateY(-1px);
   }
 
   .actions a:last-child {
+    background: rgba(255, 255, 255, 0.15);
     color: var(--ink-soft);
     font-weight: 600;
+  }
+
+  .actions a:last-child:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: var(--ink);
   }
 
   @media (max-width: 42rem) {

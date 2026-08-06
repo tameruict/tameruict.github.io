@@ -37,9 +37,10 @@ const isWriteups = pathname === writeupsPath || pathname.startsWith(`${writeupsP
     position: sticky;
     top: 0;
     z-index: 20;
-    border-bottom: 1px solid var(--line);
-    background: var(--header-surface);
-    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 24px 0 rgba(217, 70, 239, 0.1);
   }
 
   .header-shell {
@@ -115,13 +116,18 @@ const isWriteups = pathname === writeupsPath || pathname.startsWith(`${writeupsP
   }
 
   nav a:hover {
-    background: var(--surface-muted);
+    background: rgba(255, 255, 255, 0.3);
     color: var(--accent-strong);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(217, 70, 239, 0.15);
   }
 
   nav a[aria-current="page"] {
-    background: var(--accent-soft);
+    background: rgba(217, 70, 239, 0.2);
     color: var(--accent-strong);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(217, 70, 239, 0.3);
+    box-shadow: 0 4px 12px rgba(217, 70, 239, 0.25);
   }
 
   @media (max-width: 37rem) {
@@ -156,7 +162,7 @@ const isWriteups = pathname === writeupsPath || pathname.startsWith(`${writeupsP
 
   @media (prefers-reduced-transparency: reduce) {
     .site-header {
-      background: var(--paper);
+      background: rgba(255, 238, 245, 0.95);
       backdrop-filter: none;
     }
   }

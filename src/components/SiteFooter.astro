@@ -15,8 +15,10 @@ const year = new Date().getFullYear();
 
 <style>
   .site-footer {
-    border-top: 1px solid var(--line);
-    background: var(--surface);
+    border-top: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px) saturate(180%);
+    box-shadow: 0 -4px 24px 0 rgba(217, 70, 239, 0.1);
   }
 
   .footer-shell {
