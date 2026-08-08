@@ -25,7 +25,7 @@ Lỗ hổng chính là **Server-Side Template Injection (SSTI)** trong Jinja2. I
 
 Trong trang **Personal Info**, thử nhập một biểu thức template đơn giản vào trường **Full Name** rồi lưu thay đổi:
 
-![Payload SSTI được nhập vào trường Full Name](/images/jinja-care/jinja-care-01.png)
+![Payload SSTI được nhập vào trường Full Name](https://tameruict.github.io/images/jinja-care/jinja-care-01.png)
 
 ```text
 {{7*7}}
@@ -49,7 +49,7 @@ Trong challenge này, payload đọc file được dùng trong trường **Full 
 
 Sau khi lưu hồ sơ, nội dung lệnh được render trực tiếp vào trang. Kết quả thu được là flag:
 
-![Flag hiển thị trên chứng chỉ JinjaCare](/images/jinja-care/jinja-care-02.png)
+![Flag hiển thị trên chứng chỉ JinjaCare](https://tameruict.github.io/images/jinja-care/jinja-care-02.png)
 
 ```text
 HTB{V3ry_e4sy_sst1_r1ght?}

