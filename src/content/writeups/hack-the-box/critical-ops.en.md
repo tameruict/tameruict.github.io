@@ -10,6 +10,7 @@ language: "en"
 translationKey: "hack-the-box/critical-ops"
 draft: false
 featured: false
+cover: "/images/critical-ops/critical-ops-05.png"
 ---
 
 > This write-up was conducted in a controlled lab environment. Only apply the techniques below on systems you are authorized to test.
@@ -44,15 +45,21 @@ After logging in, open DevTools and inspect cookies or local storage. The applic
 
 In the **Sources** tab, search for `JWT_SECRET`. The source map points to `jwt.ts`, where the secret is hard-coded:
 
+![DevTools showing authToken and the JWT_SECRET search result](/images/critical-ops/critical-ops-01.png)
+
 ```javascript
 const JWT_SECRET = 'SecretKey-CriticalOps-2025';
 ```
+
+![JWT secret exposed in the source map](/images/critical-ops/critical-ops-02.png)
 
 This is a serious design issue: a signing secret must remain on the server and must never be bundled into JavaScript sent to the client.
 
 ### 3. Preserve claims and change the role
 
 Decode the current token, keep the identity and expiry claims, and change `role` to `admin`. The following script signs the token again with HMAC-SHA256:
+
+![Decoded JWT showing the admin role and related claims](/images/critical-ops/critical-ops-03.png)
 
 ```python
 import base64
@@ -84,6 +91,8 @@ print(forged_token)
 
 Replace `authToken` with the new token and reload the dashboard. The server accepts `role=admin` because the replacement signature is valid, and the Admin Panel becomes available.
 
+![JWT signature regenerated with the challenge secret](/images/critical-ops/critical-ops-04.png)
+
 ### 4. Retrieve the flag
 
 The Admin Panel incident list contains a record whose title is the flag:
@@ -91,6 +100,8 @@ The Admin Panel incident list contains a record whose title is the flag:
 ```text
 HTB{Wh0_Put_JWT_1n_Cl13nt_S1d3_Im4g}
 ```
+
+![Flag displayed in the Admin Panel incident list](/images/critical-ops/critical-ops-05.png)
 
 ## Root Cause
 

