@@ -3,7 +3,7 @@ title: "Web Requests"
 description: "Understanding HTTP fundamentals: methods, headers, status codes, cookies, POST/GET, and CRUD API interaction via cURL and Browser DevTools."
 platform: "Hack The Box"
 category: "Academy"
-difficulty: "Fundamental"
+difficulty: "Easy"
 publishedAt: 2026-09-24
 tags: ["web", "http", "curl", "api", "crud", "headers", "cookies", "rest-api"]
 language: "en"

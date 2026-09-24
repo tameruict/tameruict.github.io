@@ -3,7 +3,7 @@ title: "Web Requests"
 description: "Học cách hoạt động của HTTP: methods, headers, status codes, cookies, POST/GET, và CRUD API thông qua cURL và Browser DevTools."
 platform: "Hack The Box"
 category: "Academy"
-difficulty: "Fundamental"
+difficulty: "Easy"
 publishedAt: 2026-09-24
 tags: ["web", "http", "curl", "api", "crud", "headers", "cookies", "rest-api"]
 language: "vi"
